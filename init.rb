@@ -15,5 +15,15 @@ Redmine::Plugin.register :cosmosys_adr do
   settings default: { 'status_ids' => {} }
 end
 
+require_dependency 'project'
 require_dependency File.expand_path('lib/cosmosys_adr', __dir__)
+require_dependency File.expand_path('app/models/cosmosys_adr/project_setting', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/profile_registration', __dir__)
+require_dependency File.expand_path('lib/cosmosys_adr/project_patch', __dir__)
+
+patch_cosmosys_adr = proc do
+  Project.include CosmosysAdr::ProjectPatch unless Project < CosmosysAdr::ProjectPatch
+end
+
+patch_cosmosys_adr.call
+Rails.application.config.to_prepare(&patch_cosmosys_adr)

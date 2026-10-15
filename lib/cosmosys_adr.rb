@@ -2,6 +2,8 @@ module CosmosysAdr
   TRACKER_KEY = 'adr'.freeze
   TRACKER_NAME = 'csAdr'.freeze
   ITEM_KIND = 'adr'.freeze
+  FORMATS = %w[nygard madr].freeze
+  DEFAULT_FORMAT = 'nygard'.freeze
 
   # Canonical names used when the migration creates or finds the statuses.
   # At runtime statuses are resolved through the ids stored by the migration.

@@ -56,4 +56,11 @@ class CosmosysAdrSetupTest < ActiveSupport::TestCase
                  profile.to_h.values_at(:tree_visible, :report_visible, :chapter_numbered, :diagram_visible,
                                         :can_have_children, :can_split, :physical_delete_policy)
   end
+
+  def test_default_deciders_are_found_in_other_languages
+    @manager_role.update!(name: 'Jefe de proyecto')
+    @developer_role.update!(name: 'Desarrollador')
+
+    assert_equal [@manager_role.id, @developer_role.id].sort, CosmosysAdr::ProjectSetting.default_decider_role_ids.sort
+  end
 end

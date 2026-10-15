@@ -1,3 +1,7 @@
 es:
   label_cosmosys_adr_item_profile: "ADR"
   text_cosmosys_adr_item_profile: "Registro de decisión de arquitectura de cosmoSys ADR. No aparece en el árbol, el informe, la numeración de capítulos ni los diagramas; solo un administrador puede borrarlo."
+
+  field_cosmosys_adr_project_setting_template: "Plantilla"
+  field_cosmosys_adr_project_setting_decider_role_ids: "Roles que deciden"
+  field_decider_role_ids: "Roles que deciden"

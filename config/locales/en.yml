@@ -1,3 +1,7 @@
 en:
   label_cosmosys_adr_item_profile: "ADR"
   text_cosmosys_adr_item_profile: "Architecture Decision Record supplied by cosmoSys ADR. Kept out of the tree, the report, chapter numbering and diagrams; only an administrator may delete one."
+
+  field_cosmosys_adr_project_setting_template: "Template"
+  field_cosmosys_adr_project_setting_decider_role_ids: "Roles that decide"
+  field_decider_role_ids: "Roles that decide"
