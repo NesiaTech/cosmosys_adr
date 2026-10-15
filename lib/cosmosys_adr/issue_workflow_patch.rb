@@ -28,9 +28,9 @@ module CosmosysAdr
       super
       return unless cosmosys_adr?
 
-      return if new_record?
-
-      if requested_status_id && requested_status_id != status_id_in_database && requested_status_id != status_id
+      if new_record?
+        cosmosys_adr_apply_new_record_defaults(apply_template: true)
+      elsif requested_status_id && requested_status_id != status_id_in_database && requested_status_id != status_id
         @cosmosys_adr_requested_status_key = CosmosysAdr.status_key(requested_status_id) || :unknown
       end
     end

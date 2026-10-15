@@ -18,6 +18,7 @@ module CosmosysAdr
     # the ADR is accepted or rejected, and the date it stops being in force
     # when it is deprecated or superseded. Nobody sets them by hand.
     STAMPED_ATTRIBUTES = %w[adr_date adr_in_force_until].freeze
+    MADR_ATTRIBUTES = %w[adr_decision_makers adr_consulted adr_informed].freeze
 
     def self.included(base)
       base.class_eval do
@@ -29,6 +30,8 @@ module CosmosysAdr
 
         safe_attributes 'adr_supersedes_id',
                         if: ->(issue, _user) { issue.cosmosys_adr? }
+        safe_attributes(*CosmosysAdr::IssuePatch::MADR_ATTRIBUTES,
+                        if: ->(issue, _user) { issue.cosmosys_adr? && issue.cosmosys_adr_madr? })
 
         before_validation :cosmosys_adr_apply_defaults, on: :create
         validate :cosmosys_adr_validate
@@ -55,6 +58,14 @@ module CosmosysAdr
 
     def cosmosys_adr_status_key_in_database
       CosmosysAdr.status_key(status_id_in_database)
+    end
+
+    def cosmosys_adr_format
+      adr_format.presence || (new_record? ? CosmosysAdr::ProjectSetting.template_for(project) : CosmosysAdr::DEFAULT_FORMAT)
+    end
+
+    def cosmosys_adr_madr?
+      cosmosys_adr_format == 'madr'
     end
 
     # Decided ADRs are locked: only notes, relations and the transitions of
@@ -90,10 +101,16 @@ module CosmosysAdr
     def cosmosys_adr_apply_defaults
       return unless cosmosys_adr?
 
-      self.adr_format = CosmosysAdr::ProjectSetting.template_for(project) if adr_format.blank? && project
-      self.adr_source ||= CosmosysAdr::SOURCE_COSMOSYS
+      cosmosys_adr_apply_new_record_defaults(apply_template: false)
       # A new ADR is a proposal: it has no decision yet.
       STAMPED_ATTRIBUTES.each { |name| self[name] = nil }
+    end
+
+    def cosmosys_adr_apply_new_record_defaults(apply_template:)
+      self.adr_format = CosmosysAdr::ProjectSetting.template_for(project) if adr_format.blank? && project
+      self.adr_source ||= CosmosysAdr::SOURCE_COSMOSYS
+      self.description = CosmosysAdr::Templates.for(adr_format) if apply_template && description.blank?
+      MADR_ATTRIBUTES.each { |name| self[name] = nil } unless cosmosys_adr_madr?
     end
 
     def cosmosys_adr_validate

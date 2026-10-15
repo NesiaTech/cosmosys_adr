@@ -28,6 +28,7 @@ require_dependency 'projects_helper'
 require_dependency File.expand_path('lib/cosmosys_adr', __dir__)
 require_dependency File.expand_path('app/models/cosmosys_adr/project_setting', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/profile_registration', __dir__)
+require_dependency File.expand_path('lib/cosmosys_adr/templates', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/supersession', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/module_sync', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/issue_patch', __dir__)
