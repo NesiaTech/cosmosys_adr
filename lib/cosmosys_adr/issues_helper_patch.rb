@@ -21,10 +21,14 @@ module CosmosysAdr
 
     private
 
+    # An ADR the user cannot see keeps its plain issue id, as Redmine shows it.
     def cosmosys_adr_history_label(issue_id)
       return nil if issue_id.blank?
 
-      CosmosysAdr.label(Issue.where(id: issue_id).pick(:adr_number)) || "##{issue_id}"
+      issue = Issue.find_by(id: issue_id)
+      return "##{issue_id}" unless issue&.visible?
+
+      CosmosysAdr.label(issue.adr_number) || "##{issue_id}"
     end
   end
 end

@@ -5,7 +5,8 @@ module CosmosysAdr
     def cosmosys_adr_status_pill(issue)
       key = issue.cosmosys_adr_status_key
       text = issue.status&.name.to_s
-      if key == :superseded && (successor = issue.cosmosys_adr_superseded_by)
+      # The successor is named only to users who can see it.
+      if key == :superseded && (successor = issue.cosmosys_adr_superseded_by)&.visible?
         text = l(:label_cosmosys_adr_superseded_by_pill, label: successor.cosmosys_adr_label)
       end
       content_tag(:span, text, class: "cosmosys-adr-pill cosmosys-adr-pill-#{key || 'unknown'}")
