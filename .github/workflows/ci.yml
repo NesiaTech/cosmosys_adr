@@ -93,7 +93,9 @@ jobs:
 
       # The cache of the test image holds every layer, the deployment's too,
       # so a run only rebuilds what changed since the last one: nothing,
-      # unless the pins or the test image moved.
+      # unless the pins or the test image moved. Pull requests from forks
+      # only read it (the second line repeats cache-from for them), so they
+      # cannot fill it and push the cache of main out.
       - name: Build the test image
         uses: docker/bake-action@018cb6412ab401ebaa809aa5f85966b74628600f # v7.4.0
         with:
@@ -102,7 +104,7 @@ jobs:
           targets: test
           set: |
             test.cache-from=type=gha,scope=${{ matrix.variant }}-${{ matrix.plugin-sets }}
-            test.cache-to=type=gha,mode=max,scope=${{ matrix.variant }}-${{ matrix.plugin-sets }}
+            ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('test.cache-to=type=gha,mode=max,scope={0}-{1}', matrix.variant, matrix.plugin-sets) || format('test.cache-from=type=gha,scope={0}-{1}', matrix.variant, matrix.plugin-sets) }}
 
       - name: Migrations and tests
         run: cosmosys_adr/.github/ci/test.sh cosmosys-adr-ci:${{ matrix.variant }}
