@@ -11,6 +11,21 @@ class CosmosysAdrApiTest < Redmine::ApiTest::Base
     @proposed = create_adr(@project, subject: 'Use Redis')
   end
 
+  def test_editing_an_accepted_adr_answers_422
+    put "/issues/#{@adr.id}.json", params: { issue: { subject: 'Use SQLite after all' } },
+                                   headers: credentials(@manager.login, @password)
+
+    assert_response 422
+    assert_includes response.parsed_body['errors'], I18n.t(:error_cosmosys_adr_locked, label: 'ADR-0001')
+    assert_equal 'Use PostgreSQL', fresh(@adr).subject
+  end
+
+  def test_notes_on_an_accepted_adr_are_accepted
+    put "/issues/#{@adr.id}.json", params: { issue: { notes: 'Still valid.' } }, headers: credentials(@manager.login, @password)
+
+    assert_response :no_content
+  end
+
   def test_a_proposed_adr_can_be_edited
     put "/issues/#{@proposed.id}.json", params: { issue: { subject: 'Use Redis 8' } }, headers: credentials(@developer.login, @password)
 

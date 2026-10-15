@@ -1,10 +1,17 @@
 require_dependency 'issue'
 
 module CosmosysAdr
-  # An ADR is an issue of the csAdr tracker. This patch numbers ADRs and keeps
-  # their lifecycle. Every rule is a model validation, so the form, bulk edit
-  # and the REST API all go through it.
+  # An ADR is an issue of the csAdr tracker. This patch numbers ADRs, keeps
+  # their lifecycle and locks their content once they leave Proposed. Every
+  # rule is a model validation, so the form, bulk edit and the REST API all
+  # go through it.
   module IssuePatch
+    # What an ADR says. None of it may change once the ADR is decided.
+    CONTENT_ATTRIBUTES = %w[
+      subject description project_id tracker_id
+      adr_number adr_format adr_date adr_decision_makers adr_consulted adr_informed
+      adr_supersedes_id adr_source
+    ].freeze
     # Set when the ADR is created and never changed afterwards.
     IDENTITY_ATTRIBUTES = %w[adr_number adr_format adr_source].freeze
 
@@ -32,6 +39,12 @@ module CosmosysAdr
 
     def cosmosys_adr_status_key_in_database
       CosmosysAdr.status_key(status_id_in_database)
+    end
+
+    # Decided ADRs are locked: only notes, relations and the transitions of
+    # their lifecycle are allowed.
+    def cosmosys_adr_locked?
+      cosmosys_adr? && persisted? && cosmosys_adr_status_key_in_database != :proposed
     end
 
     def cosmosys_adr_actor
@@ -70,6 +83,10 @@ module CosmosysAdr
 
       changed_identity = IDENTITY_ATTRIBUTES.select { |name| will_save_change_to_attribute?(name) }
       changed_identity.each { |name| errors.add(name, :cosmosys_adr_immutable) }
+
+      if cosmosys_adr_locked? && cosmosys_adr_content_changed?
+        errors.add(:base, I18n.t(:error_cosmosys_adr_locked, label: cosmosys_adr_label))
+      end
       cosmosys_adr_validate_transition if will_save_change_to_status_id?
     end
 
@@ -86,6 +103,12 @@ module CosmosysAdr
       else
         errors.add(:status_id, :cosmosys_adr_invalid_transition)
       end
+    end
+
+    def cosmosys_adr_content_changed?
+      (CONTENT_ATTRIBUTES - IDENTITY_ATTRIBUTES).any? { |name| will_save_change_to_attribute?(name) } ||
+        (respond_to?(:custom_field_values_changed?) && custom_field_values_changed?) ||
+        saved_attachments.present?
     end
 
     def cosmosys_adr_validate_transition

@@ -23,6 +23,7 @@ en:
   text_cosmosys_adr_deciders_setting_help: "Project roles, stored by id, so renaming or translating a role does not change this setting."
   text_cosmosys_adr_tree_report_help: "Coming in a later version. ADRs do not appear in the cosmoSys tree or report."
 
+  error_cosmosys_adr_locked: "%{label} is no longer Proposed and its content cannot change: create a new ADR that supersedes it."
   error_cosmosys_adr_role_not_allowed: "Your roles cannot accept, reject or deprecate %{label} in this project."
   error_cosmosys_adr_module_disabled: "The ADRs module is not enabled in this project."
 

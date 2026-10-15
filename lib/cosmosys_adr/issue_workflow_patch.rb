@@ -35,6 +35,25 @@ module CosmosysAdr
       end
     end
 
+    # Attachments are part of what a decided ADR says.
+    def attachments_addable?(user = User.current)
+      return false if cosmosys_adr_locked?
+
+      super
+    end
+
+    def attachments_editable?(user = User.current)
+      return false if cosmosys_adr_locked?
+
+      super
+    end
+
+    def attachments_deletable?(user = User.current)
+      return false if cosmosys_adr_locked?
+
+      super
+    end
+
     private
 
     def cosmosys_adr_requested_status_id(attrs)
