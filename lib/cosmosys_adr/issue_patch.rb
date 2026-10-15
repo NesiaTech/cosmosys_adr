@@ -17,9 +17,20 @@ module CosmosysAdr
 
     def self.included(base)
       base.class_eval do
+        belongs_to :adr_supersedes, class_name: 'Issue', optional: true
+        # Deleting an ADR (administrators only) clears the pointer of the ADR
+        # that superseded it, so no ADR points to a missing one.
+        has_many :adr_superseding_issues, class_name: 'Issue', foreign_key: :adr_supersedes_id,
+                 dependent: :nullify, inverse_of: :adr_supersedes
+
+        safe_attributes 'adr_supersedes_id',
+                        if: ->(issue, _user) { issue.cosmosys_adr? }
+
         before_validation :cosmosys_adr_apply_defaults, on: :create
         validate :cosmosys_adr_validate
         before_create :cosmosys_adr_assign_number
+        before_save :cosmosys_adr_capture_changes
+        after_save :cosmosys_adr_apply_supersession
         after_commit :cosmosys_adr_forget_request
         after_rollback :cosmosys_adr_forget_request
       end
@@ -45,6 +56,24 @@ module CosmosysAdr
     # their lifecycle are allowed.
     def cosmosys_adr_locked?
       cosmosys_adr? && persisted? && cosmosys_adr_status_key_in_database != :proposed
+    end
+
+    # The ADR this one supersedes once accepted.
+    def cosmosys_adr_superseded_by
+      return nil unless cosmosys_adr? && persisted?
+
+      superseded_ids = [CosmosysAdr.status_ids[:proposed], CosmosysAdr.status_ids[:rejected]].compact
+      Issue.where(adr_supersedes_id: id).where.not(status_id: superseded_ids).order(:id).first
+    end
+
+    # ADRs of the same project this ADR may supersede: accepted ones.
+    def cosmosys_adr_supersedable
+      return Issue.none unless project && CosmosysAdr.status_ids[:accepted]
+
+      scope = Issue.visible.where(project_id: project.id, status_id: CosmosysAdr.status_ids[:accepted])
+                   .where.not(adr_number: nil)
+      scope = scope.where.not(id: id) if persisted?
+      scope.order(:adr_number)
     end
 
     def cosmosys_adr_actor
@@ -76,6 +105,7 @@ module CosmosysAdr
       unless cosmosys_adr_status_key == :proposed
         errors.add(:status_id, :cosmosys_adr_must_start_proposed)
       end
+      cosmosys_adr_validate_supersedes(require_accepted: true)
     end
 
     def cosmosys_adr_validate_update
@@ -88,6 +118,11 @@ module CosmosysAdr
         errors.add(:base, I18n.t(:error_cosmosys_adr_locked, label: cosmosys_adr_label))
       end
       cosmosys_adr_validate_transition if will_save_change_to_status_id?
+      if will_save_change_to_adr_supersedes_id?
+        cosmosys_adr_validate_supersedes(require_accepted: true)
+      elsif will_save_change_to_status_id? && cosmosys_adr_status_key == :accepted
+        cosmosys_adr_validate_supersedes(require_accepted: true)
+      end
     end
 
     # A status asked for through the form or the API that the user may not
@@ -119,9 +154,25 @@ module CosmosysAdr
         return
       end
 
-      return if CosmosysAdr.decider?(cosmosys_adr_actor, project)
+      if to == :superseded
+        errors.add(:status_id, :cosmosys_adr_superseded_by_plugin) unless CosmosysAdr::Supersession.active_for?(self)
+      elsif !CosmosysAdr.decider?(cosmosys_adr_actor, project)
+        errors.add(:base, I18n.t(:error_cosmosys_adr_role_not_allowed, label: cosmosys_adr_label))
+      end
+    end
 
-      errors.add(:base, I18n.t(:error_cosmosys_adr_role_not_allowed, label: cosmosys_adr_label))
+    def cosmosys_adr_validate_supersedes(require_accepted:)
+      return if adr_supersedes_id.blank?
+
+      target = Issue.find_by(id: adr_supersedes_id)
+      valid = target.present? && target.cosmosys_adr? && target.project_id == project_id && target.id != id
+      unless valid
+        errors.add(:adr_supersedes_id, :invalid)
+        return
+      end
+      return unless require_accepted && target.cosmosys_adr_status_key != :accepted
+
+      errors.add(:adr_supersedes_id, :cosmosys_adr_supersedes_not_accepted)
     end
 
     def cosmosys_adr_validate_fields
@@ -137,8 +188,26 @@ module CosmosysAdr
       self.adr_number = setting.reserve_number!
     end
 
+    def cosmosys_adr_capture_changes
+      @cosmosys_adr_superseding = cosmosys_adr? && will_save_change_to_status_id? &&
+                                  cosmosys_adr_status_key == :accepted && adr_supersedes_id.present?
+      return unless @cosmosys_adr_superseding && current_journal
+
+      current_journal.details << JournalDetail.new(
+        property: 'attr', prop_key: 'adr_superseded',
+        value: CosmosysAdr.label(Issue.where(id: adr_supersedes_id).pick(:adr_number))
+      )
+    end
+
     def cosmosys_adr_forget_request
       @cosmosys_adr_requested_status_key = nil
+    end
+
+    def cosmosys_adr_apply_supersession
+      return unless @cosmosys_adr_superseding
+
+      @cosmosys_adr_superseding = false
+      CosmosysAdr::Supersession.new(self, cosmosys_adr_actor).call
     end
   end
 end

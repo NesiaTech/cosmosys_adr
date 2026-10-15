@@ -106,6 +106,14 @@ class CosmosysAdrLifecycleTest < ActiveSupport::TestCase
     assert_raises(ActiveRecord::RecordInvalid) { transition!(deprecated, :accepted) }
   end
 
+  def test_superseded_is_reached_only_through_the_plugin
+    accepted = accepted_adr(@project)
+
+    error = assert_raises(ActiveRecord::RecordInvalid) { transition!(accepted, :superseded, user: @admin) }
+    assert error.record.errors.added?(:status_id, :cosmosys_adr_superseded_by_plugin)
+    assert_not_includes accepted.reload.new_statuses_allowed_to(@admin), adr_status(:superseded)
+  end
+
   def test_a_status_outside_the_lifecycle_is_refused
     issue = fresh(create_adr(@project))
     issue.init_journal(@manager)

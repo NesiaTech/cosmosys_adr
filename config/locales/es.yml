@@ -8,6 +8,9 @@ es:
 
   field_adr_number: "Número"
   field_adr_format: "Formato"
+  field_adr_supersedes: "Sustituye a"
+  field_adr_superseded_by: "Sustituido por"
+  field_adr_superseded: "ADR sustituido"
   field_adr_source: "Origen"
   field_cosmosys_adr_project_setting_template: "Plantilla"
   field_cosmosys_adr_project_setting_decider_role_ids: "Roles que deciden"
@@ -34,3 +37,5 @@ es:
         cosmosys_adr_must_start_proposed: "debe ser Proposed al crear un ADR"
         cosmosys_adr_immutable: "no puede cambiar una vez creado el ADR"
         cosmosys_adr_invalid_transition: "no es un paso válido para este ADR"
+        cosmosys_adr_superseded_by_plugin: "solo pasa a Superseded cuando se acepta el ADR que lo sustituye"
+        cosmosys_adr_supersedes_not_accepted: "debe ser un ADR aceptado del mismo proyecto"

@@ -19,15 +19,15 @@ module CosmosysAdr
   }.freeze
   STATUS_KEYS = STATUS_NAMES.keys.freeze
 
-  # Transitions a person can make, by role, and every transition the
-  # lifecycle allows.
+  # Transitions a person can make, by role. Superseded is reached only through
+  # CosmosysAdr::Supersession when the superseding ADR is accepted.
   DECISION_TRANSITIONS = {
     proposed: %i[accepted rejected],
     accepted: %i[deprecated]
   }.freeze
   ALLOWED_TRANSITIONS = {
     proposed: %i[accepted rejected],
-    accepted: %i[deprecated]
+    accepted: %i[deprecated superseded]
   }.freeze
 
   module_function
