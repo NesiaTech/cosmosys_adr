@@ -23,8 +23,13 @@ es:
   text_cosmosys_adr_deciders_setting_help: "Roles del proyecto. Se guardan por identificador, así que renombrar o traducir un rol no los cambia."
   text_cosmosys_adr_tree_report_help: "Llegará en una versión posterior. Los ADRs no salen en el árbol ni en el informe de cosmoSys."
 
+  error_cosmosys_adr_role_not_allowed: "Tus roles no pueden aceptar, rechazar ni retirar %{label} en este proyecto."
+  error_cosmosys_adr_module_disabled: "El módulo ADRs no está activado en este proyecto."
+
   activerecord:
     errors:
       messages:
         cosmosys_adr_tracker_change: "no puede convertir una petición en ADR ni un ADR en otro tipo de petición"
+        cosmosys_adr_must_start_proposed: "debe ser Proposed al crear un ADR"
         cosmosys_adr_immutable: "no puede cambiar una vez creado el ADR"
+        cosmosys_adr_invalid_transition: "no es un paso válido para este ADR"

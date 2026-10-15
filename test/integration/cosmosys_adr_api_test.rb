@@ -1,0 +1,44 @@
+require File.expand_path('../test_helper', __dir__)
+
+class CosmosysAdrApiTest < Redmine::ApiTest::Base
+  def setup
+    super
+    setup_cosmosys_adr
+    @password = CosmosysAdr::TestHelper::PASSWORD
+    Setting.rest_api_enabled = '1'
+    @project = create_adr_project('adr-api')
+    @adr = accepted_adr(@project, subject: 'Use PostgreSQL')
+    @proposed = create_adr(@project, subject: 'Use Redis')
+  end
+
+  def test_a_proposed_adr_can_be_edited
+    put "/issues/#{@proposed.id}.json", params: { issue: { subject: 'Use Redis 8' } }, headers: credentials(@developer.login, @password)
+
+    assert_response :no_content
+    assert_equal 'Use Redis 8', fresh(@proposed).subject
+  end
+
+  def test_a_reporter_cannot_accept_through_the_api
+    put "/issues/#{@proposed.id}.json", params: { issue: { status_id: adr_status(:accepted).id } },
+                                        headers: credentials(@reporter.login, @password)
+
+    assert_response 422
+    assert_equal :proposed, fresh(@proposed).cosmosys_adr_status_key
+  end
+
+  def test_a_developer_accepts_through_the_api
+    put "/issues/#{@proposed.id}.json", params: { issue: { status_id: adr_status(:accepted).id } },
+                                        headers: credentials(@developer.login, @password)
+
+    assert_response :no_content
+    assert_equal :accepted, fresh(@proposed).cosmosys_adr_status_key
+  end
+
+  def test_the_api_shows_adr_numbers_through_creation
+    post '/issues.json', params: { issue: { project_id: @project.id, tracker_id: @adr_tracker.id, subject: 'Via API' } },
+                         headers: credentials(@developer.login, @password)
+
+    assert_response :created
+    assert_equal 3, Issue.find(response.parsed_body['issue']['id']).adr_number
+  end
+end

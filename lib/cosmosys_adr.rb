@@ -19,6 +19,17 @@ module CosmosysAdr
   }.freeze
   STATUS_KEYS = STATUS_NAMES.keys.freeze
 
+  # Transitions a person can make, by role, and every transition the
+  # lifecycle allows.
+  DECISION_TRANSITIONS = {
+    proposed: %i[accepted rejected],
+    accepted: %i[deprecated]
+  }.freeze
+  ALLOWED_TRANSITIONS = {
+    proposed: %i[accepted rejected],
+    accepted: %i[deprecated]
+  }.freeze
+
   module_function
 
   def tracker
@@ -67,5 +78,13 @@ module CosmosysAdr
 
   def module_enabled?(project)
     project.present? && project.module_enabled?(MODULE_NAME).present?
+  end
+
+  def decider?(user, project)
+    return false if user.nil? || project.nil?
+    return true if user.admin?
+
+    role_ids = CosmosysAdr::ProjectSetting.for(project).decider_role_ids
+    (user.roles_for_project(project).map(&:id) & role_ids).any?
   end
 end

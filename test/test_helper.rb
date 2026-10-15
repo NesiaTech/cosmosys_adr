@@ -85,6 +85,22 @@ module CosmosysAdr
     def fresh(issue)
       Issue.find(issue.id)
     end
+
+    # Moves an ADR through the lifecycle as `user`, like the issue form does.
+    def transition!(issue, key, user: @manager)
+      issue = fresh(issue)
+      issue.init_journal(user)
+      issue.status = adr_status(key)
+      User.current = user
+      issue.save!
+      fresh(issue)
+    ensure
+      User.current = nil
+    end
+
+    def accepted_adr(project, **attributes)
+      transition!(create_adr(project, **attributes), :accepted)
+    end
   end
 end
 
