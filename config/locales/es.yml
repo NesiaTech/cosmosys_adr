@@ -1,0 +1,3 @@
+es:
+  label_cosmosys_adr_item_profile: "ADR"
+  text_cosmosys_adr_item_profile: "Registro de decisión de arquitectura de cosmoSys ADR. No aparece en el árbol, el informe, la numeración de capítulos ni los diagramas; solo un administrador puede borrarlo."
