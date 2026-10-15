@@ -22,7 +22,7 @@ cosmosys_adr adds no gems. It works next to cosmoSys Requirements, cosmoSys PORI
 3. Run the migrations of cosmoSys first, then this plugin's: `RAILS_ENV=production bundle exec rake redmine:plugins:migrate NAME=cosmosys_adr`.
 4. Start Redmine and check that "cosmoSys ADR" appears in Administration › Plugins.
 
-The migration adds the ADR columns to `issues`, two tables (`cosmosys_adr_project_settings` and `cosmosys_adr_mentions`), the `csAdr` tracker and the statuses Proposed, Accepted, Rejected, Deprecated and Superseded. A status that already exists with one of those names is reused. Every non-builtin role gets the workflow Proposed → Accepted, Proposed → Rejected and Accepted → Deprecated; Superseded is set only by the plugin.
+The migration adds the ADR columns to `issues`, two tables (`cosmosys_adr_project_settings` and `cosmosys_adr_mentions`), the `csAdr` tracker and the statuses Proposed, Accepted, Rejected, Deprecated and Superseded. A status that already exists with one of those names is reused. Every non-builtin role gets the workflow Proposed → Accepted, Proposed → Rejected and Accepted → Deprecated; Superseded is set only by the plugin. A role created after the installation has no workflow for `csAdr` until an administrator gives it one in Administration › Workflow.
 
 To roll back, run `rake redmine:plugins:migrate NAME=cosmosys_adr VERSION=0`. It refuses to run while `csAdr` issues exist, so no ADR loses its number by accident. The statuses stay, because other trackers may use them.
 
@@ -59,9 +59,9 @@ In any text that cosmoSys renders (issue descriptions and notes, long text field
 - `ADR#meta#0003` refers to ADR 3 of the project whose Redmine identifier is `meta`;
 - `!ADR#0007` is shown as the plain text `ADR#0007`.
 
-A reference shows as a link with the ADR number, title and status. A reference to an ADR that does not exist shows as a broken reference, and one the reader cannot see as a restricted reference, without its title. References inside code are left alone, and `#123`, `#CSID` and `document:diN` keep working.
+A reference shows as a link with the ADR number, title and status. A reference to an ADR that does not exist shows as a broken reference, and one the reader cannot see as a restricted reference, without its title or status: the reader learns only that the ADR exists. References inside code are left alone, and `#123`, `#CSID` and `document:diN` keep working.
 
-An issue can be linked to an ADR explicitly from its **Linked ADRs** panel. The link is a native "related to" relation, so it also shows in the related issues of both and may cross projects. A reference in a description, a long text field or a note counts as a link too; it disappears when the text no longer contains it. The ADR page lists every issue that links to or mentions it, with its origin.
+An issue can be linked to an ADR explicitly from its **Linked ADRs** panel. The link is a native "related to" relation, so it also shows in the related issues of both, and it may cross projects when Redmine allows relations between projects (Administration › Settings › Issue tracking). A reference in a description, a long text field or a note counts as a link too; it disappears when the text no longer contains it. The ADR page lists every issue that links to or mentions it, with its origin. A mention counts only for users who can see the text it comes from.
 
 ## Tests
 
