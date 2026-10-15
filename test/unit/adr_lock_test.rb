@@ -21,6 +21,7 @@ class CosmosysAdrLockTest < ActiveSupport::TestCase
       subject: 'Changed',
       description: 'Changed',
       adr_date: Date.new(2020, 1, 1),
+      adr_in_force_until: Date.new(2020, 1, 1),
       adr_decision_makers: 'someone else',
       adr_consulted: 'operations',
       adr_informed: 'everyone'

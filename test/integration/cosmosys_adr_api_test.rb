@@ -26,6 +26,15 @@ class CosmosysAdrApiTest < Redmine::ApiTest::Base
     assert_response :no_content
   end
 
+  def test_the_api_does_not_take_the_dates
+    put "/issues/#{@proposed.id}.json", params: { issue: { adr_date: '2020-01-01', adr_in_force_until: '2020-02-02' } },
+                                        headers: credentials(@developer.login, @password)
+
+    assert_response :no_content
+    assert_nil fresh(@proposed).adr_date
+    assert_nil fresh(@proposed).adr_in_force_until
+  end
+
   def test_a_proposed_adr_can_be_edited
     put "/issues/#{@proposed.id}.json", params: { issue: { subject: 'Use Redis 8' } }, headers: credentials(@developer.login, @password)
 

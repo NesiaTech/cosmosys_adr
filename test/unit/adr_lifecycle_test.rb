@@ -11,6 +11,8 @@ class CosmosysAdrLifecycleTest < ActiveSupport::TestCase
 
     assert_equal :proposed, issue.cosmosys_adr_status_key
     assert_equal 'cosmosys', issue.adr_source
+    assert_nil issue.adr_date
+    assert_nil issue.adr_in_force_until
   end
 
   def test_an_adr_cannot_be_created_in_another_status
@@ -121,6 +123,49 @@ class CosmosysAdrLifecycleTest < ActiveSupport::TestCase
 
     assert_not issue.save
     assert issue.errors.added?(:status_id, :cosmosys_adr_invalid_transition)
+  end
+
+  def test_accepting_or_rejecting_sets_the_decision_date
+    accepted = accepted_adr(@project)
+    rejected = transition!(create_adr(@project), :rejected)
+
+    assert_equal @manager.today, accepted.adr_date
+    assert_equal @manager.today, rejected.adr_date
+    assert_nil accepted.adr_in_force_until
+    assert_nil rejected.adr_in_force_until
+    assert accepted.journals.order(:id).last.details.any? { |d| d.prop_key == 'adr_date' }
+  end
+
+  def test_deprecating_sets_the_date_the_adr_stops_being_in_force
+    accepted = accepted_adr(@project)
+    accepted.update_column(:adr_date, Date.new(2026, 1, 2))
+    deprecated = transition!(accepted, :deprecated)
+
+    assert_equal Date.new(2026, 1, 2), deprecated.adr_date
+    assert_equal @manager.today, deprecated.adr_in_force_until
+    assert deprecated.journals.order(:id).last.details.any? { |d| d.prop_key == 'adr_in_force_until' }
+  end
+
+  def test_the_dates_are_never_set_by_hand
+    issue = create_adr(@project, adr_date: Date.new(2020, 1, 1), adr_in_force_until: Date.new(2020, 2, 2))
+    assert_nil issue.adr_date
+    assert_nil issue.adr_in_force_until
+
+    %i[adr_date adr_in_force_until].each do |attribute|
+      issue = fresh(issue)
+      issue.public_send("#{attribute}=", Date.new(2020, 1, 1))
+
+      assert_not issue.save, "#{attribute} should be refused"
+      assert issue.errors.added?(attribute, :cosmosys_adr_stamped)
+    end
+  end
+
+  def test_the_form_does_not_take_the_dates
+    issue = fresh(create_adr(@project))
+    issue.send(:safe_attributes=, { 'adr_date' => '2020-01-01', 'adr_in_force_until' => '2020-02-02' }, @developer)
+
+    assert_nil issue.adr_date
+    assert_nil issue.adr_in_force_until
   end
 
   def test_an_issue_cannot_become_an_adr_or_stop_being_one

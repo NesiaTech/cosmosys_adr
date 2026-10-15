@@ -18,6 +18,15 @@ class CosmosysAdrSupersessionTest < ActiveSupport::TestCase
     assert_equal @old, new_adr.reload.adr_supersedes
   end
 
+  def test_the_superseded_adr_stops_being_in_force_the_day_the_new_one_is_accepted
+    new_adr = create_adr(@project, adr_supersedes_id: @old.id)
+    transition!(new_adr, :accepted, user: @developer)
+
+    assert_equal @developer.today, @old.reload.adr_in_force_until
+    assert_equal @developer.today, new_adr.reload.adr_date
+    assert_nil new_adr.adr_in_force_until
+  end
+
   def test_both_histories_record_the_supersession
     new_adr = create_adr(@project, adr_supersedes_id: @old.id)
     transition!(new_adr, :accepted, user: @developer)

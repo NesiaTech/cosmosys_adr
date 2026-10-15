@@ -9,11 +9,15 @@ module CosmosysAdr
     # What an ADR says. None of it may change once the ADR is decided.
     CONTENT_ATTRIBUTES = %w[
       subject description project_id tracker_id
-      adr_number adr_format adr_date adr_decision_makers adr_consulted adr_informed
+      adr_number adr_format adr_date adr_in_force_until adr_decision_makers adr_consulted adr_informed
       adr_supersedes_id adr_source
     ].freeze
     # Set when the ADR is created and never changed afterwards.
     IDENTITY_ATTRIBUTES = %w[adr_number adr_format adr_source].freeze
+    # Dates the plugin writes when the status moves: the decision date when
+    # the ADR is accepted or rejected, and the date it stops being in force
+    # when it is deprecated or superseded. Nobody sets them by hand.
+    STAMPED_ATTRIBUTES = %w[adr_date adr_in_force_until].freeze
 
     def self.included(base)
       base.class_eval do
@@ -29,6 +33,7 @@ module CosmosysAdr
         before_validation :cosmosys_adr_apply_defaults, on: :create
         validate :cosmosys_adr_validate
         before_create :cosmosys_adr_assign_number
+        before_save :cosmosys_adr_stamp_dates
         before_save :cosmosys_adr_capture_changes
         after_save :cosmosys_adr_apply_supersession
         after_commit :cosmosys_adr_forget_request
@@ -87,6 +92,8 @@ module CosmosysAdr
 
       self.adr_format = CosmosysAdr::ProjectSetting.template_for(project) if adr_format.blank? && project
       self.adr_source ||= CosmosysAdr::SOURCE_COSMOSYS
+      # A new ADR is a proposal: it has no decision yet.
+      STAMPED_ATTRIBUTES.each { |name| self[name] = nil }
     end
 
     def cosmosys_adr_validate
@@ -113,6 +120,8 @@ module CosmosysAdr
 
       changed_identity = IDENTITY_ATTRIBUTES.select { |name| will_save_change_to_attribute?(name) }
       changed_identity.each { |name| errors.add(name, :cosmosys_adr_immutable) }
+      changed_stamps = STAMPED_ATTRIBUTES.select { |name| will_save_change_to_attribute?(name) }
+      changed_stamps.each { |name| errors.add(name, :cosmosys_adr_stamped) }
 
       if cosmosys_adr_locked? && cosmosys_adr_content_changed?
         errors.add(:base, I18n.t(:error_cosmosys_adr_locked, label: cosmosys_adr_label))
@@ -186,6 +195,20 @@ module CosmosysAdr
 
       setting = CosmosysAdr::ProjectSetting.for!(project)
       self.adr_number = setting.reserve_number!
+    end
+
+    # Runs after validation, so the dates it writes are never taken for a
+    # change made by hand.
+    def cosmosys_adr_stamp_dates
+      return unless cosmosys_adr? && persisted? && will_save_change_to_status_id?
+
+      today = cosmosys_adr_actor&.today || Date.current
+      case cosmosys_adr_status_key
+      when :accepted, :rejected
+        self.adr_date = today if cosmosys_adr_status_key_in_database == :proposed
+      when :deprecated, :superseded
+        self.adr_in_force_until = today
+      end
     end
 
     def cosmosys_adr_capture_changes

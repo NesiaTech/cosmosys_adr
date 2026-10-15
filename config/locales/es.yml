@@ -8,6 +8,8 @@ es:
 
   field_adr_number: "Número"
   field_adr_format: "Formato"
+  field_adr_date: "Fecha de la decisión"
+  field_adr_in_force_until: "Vigente hasta"
   field_adr_supersedes: "Sustituye a"
   field_adr_superseded_by: "Sustituido por"
   field_adr_superseded: "ADR sustituido"
@@ -36,6 +38,7 @@ es:
         cosmosys_adr_tracker_change: "no puede convertir una petición en ADR ni un ADR en otro tipo de petición"
         cosmosys_adr_must_start_proposed: "debe ser Proposed al crear un ADR"
         cosmosys_adr_immutable: "no puede cambiar una vez creado el ADR"
+        cosmosys_adr_stamped: "la fija cosmoSys ADR al decidir, retirar o sustituir el ADR"
         cosmosys_adr_invalid_transition: "no es un paso válido para este ADR"
         cosmosys_adr_superseded_by_plugin: "solo pasa a Superseded cuando se acepta el ADR que lo sustituye"
         cosmosys_adr_supersedes_not_accepted: "debe ser un ADR aceptado del mismo proyecto"
