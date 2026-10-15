@@ -27,6 +27,8 @@ module CosmosysAdr
         # that superseded it, so no ADR points to a missing one.
         has_many :adr_superseding_issues, class_name: 'Issue', foreign_key: :adr_supersedes_id,
                  dependent: :nullify, inverse_of: :adr_supersedes
+        has_many :cosmosys_adr_mentions, class_name: 'CosmosysAdr::Mention', foreign_key: :issue_id,
+                 dependent: :delete_all
 
         safe_attributes 'adr_supersedes_id',
                         if: ->(issue, _user) { issue.cosmosys_adr? }
@@ -40,6 +42,7 @@ module CosmosysAdr
         before_save :cosmosys_adr_capture_changes
         after_create :cosmosys_adr_mark_restored
         after_save :cosmosys_adr_apply_supersession
+        after_save :cosmosys_adr_reindex_mentions
         after_commit :cosmosys_adr_forget_restored
         after_rollback :cosmosys_adr_forget_restored
       end
@@ -261,6 +264,12 @@ module CosmosysAdr
     end
 
     def cosmosys_adr_capture_changes
+      @cosmosys_adr_text_changed =
+        new_record? ||
+        will_save_change_to_description? ||
+        will_save_change_to_project_id? ||
+        CosmosysAdr::MentionIndex.text_columns.any? { |name| has_attribute?(name) && will_save_change_to_attribute?(name) } ||
+        (respond_to?(:custom_field_values_changed?) && custom_field_values_changed?)
       @cosmosys_adr_superseding = cosmosys_adr? && will_save_change_to_status_id? &&
                                   cosmosys_adr_status_key == :accepted && adr_supersedes_id.present? &&
                                   !cosmosys_adr_restored_in_transaction?
@@ -287,6 +296,13 @@ module CosmosysAdr
 
       @cosmosys_adr_superseding = false
       CosmosysAdr::Supersession.new(self, cosmosys_adr_actor).call
+    end
+
+    def cosmosys_adr_reindex_mentions
+      return unless @cosmosys_adr_text_changed
+
+      @cosmosys_adr_text_changed = false
+      CosmosysAdr::MentionIndex.reindex_issue(self)
     end
   end
 end

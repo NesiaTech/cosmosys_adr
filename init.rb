@@ -22,19 +22,23 @@ Redmine::Plugin.register :cosmosys_adr do
 end
 
 require_dependency 'issue'
+require_dependency 'journal'
 require_dependency 'project'
 require_dependency 'enabled_module'
 require_dependency 'projects_helper'
 require_dependency File.expand_path('lib/cosmosys_adr', __dir__)
 require_dependency File.expand_path('app/models/cosmosys_adr/project_setting', __dir__)
+require_dependency File.expand_path('app/models/cosmosys_adr/mention', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/profile_registration', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/templates', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/reference', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/reference_renderer', __dir__)
+require_dependency File.expand_path('lib/cosmosys_adr/mention_index', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/supersession', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/module_sync', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/issue_patch', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/issue_workflow_patch', __dir__)
+require_dependency File.expand_path('lib/cosmosys_adr/journal_patch', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/project_patch', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/enabled_module_patch', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/projects_helper_patch', __dir__)
@@ -49,6 +53,7 @@ Cosmosys::ProjectCopyReferenceRegistry.register(:adr_supersedes_id)
 patch_cosmosys_adr = proc do
   Issue.include CosmosysAdr::IssuePatch unless Issue < CosmosysAdr::IssuePatch
   Issue.prepend CosmosysAdr::IssueWorkflowPatch unless Issue < CosmosysAdr::IssueWorkflowPatch
+  Journal.include CosmosysAdr::JournalPatch unless Journal < CosmosysAdr::JournalPatch
   Project.include CosmosysAdr::ProjectPatch unless Project < CosmosysAdr::ProjectPatch
   EnabledModule.include CosmosysAdr::EnabledModulePatch unless EnabledModule < CosmosysAdr::EnabledModulePatch
   ProjectsHelper.prepend CosmosysAdr::ProjectsHelperPatch unless ProjectsHelper < CosmosysAdr::ProjectsHelperPatch
