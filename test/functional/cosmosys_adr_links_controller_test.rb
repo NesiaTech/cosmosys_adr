@@ -35,6 +35,14 @@ class CosmosysAdr::LinksControllerTest < Redmine::ControllerTest
     assert_equal [[@adr, :mention]], CosmosysAdr::Links.for_issue(fresh(@bug), @developer).map { |e| [e.issue, e.origin] }
   end
 
+  def test_other_projects_are_offered_only_when_redmine_allows_relations_between_projects
+    local = accepted_adr(@project, subject: 'Local decision')
+
+    assert_equal [@project, @meta].sort_by(&:id), CosmosysAdr::Links.linkable_adrs(@developer, @project).keys.sort_by(&:id)
+    Setting.cross_project_issue_relations = '0'
+    assert_equal({ @project => [local] }, CosmosysAdr::Links.linkable_adrs(@developer, @project))
+  end
+
   def test_linking_needs_the_relations_permission
     @reporter_role.remove_permission!(:manage_issue_relations)
     @request.session[:user_id] = @reporter.id

@@ -83,14 +83,16 @@ module CosmosysAdr
       CosmosysAdr::Mention.where(issue_id: issue.id).includes(:journal).to_a
     end
 
-    # ADRs the user may link from an issue, grouped by project.
-    def linkable_adrs(user, limit: 500)
+    # ADRs the user may link from an issue of project, grouped by project:
+    # only those of the same project when Redmine does not allow relations
+    # between projects.
+    def linkable_adrs(user, project, limit: 500)
       tracker = CosmosysAdr.tracker
       return {} unless tracker
 
-      Issue.visible(user).where(tracker_id: tracker.id).where.not(adr_number: nil)
-           .includes(:project, :status).order(:project_id, :adr_number).limit(limit).to_a
-           .group_by(&:project)
+      scope = Issue.visible(user).where(tracker_id: tracker.id).where.not(adr_number: nil)
+      scope = scope.where(project_id: project.id) unless Setting.cross_project_issue_relations?
+      scope.includes(:project, :status).order(:project_id, :adr_number).limit(limit).to_a.group_by(&:project)
     end
   end
 end

@@ -1,6 +1,6 @@
 <% entries = CosmosysAdr::Links.for_issue(issue, User.current) %>
 <% can_link = User.current.allowed_to?(:manage_issue_relations, issue.project) %>
-<% linkable = can_link ? CosmosysAdr::Links.linkable_adrs(User.current) : {} %>
+<% linkable = can_link ? CosmosysAdr::Links.linkable_adrs(User.current, issue.project) : {} %>
 <%# Shown where ADRs are used: projects with the ADRs module, and issues that
     already link to or mention an ADR. %>
 <% if entries.any? || (CosmosysAdr.module_enabled?(issue.project) && linkable.any?) %>
