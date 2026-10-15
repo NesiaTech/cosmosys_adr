@@ -22,7 +22,7 @@ module CosmosysAdr
       if @issue.save
         flash[:notice] = l(:"notice_cosmosys_adr_#{target_key}", label: @issue.cosmosys_adr_label)
       else
-        flash[:error] = @issue.errors.full_messages.join(' ')
+        flash[:error] = ERB::Util.html_escape(@issue.errors.full_messages.join(' '))
       end
       redirect_to issue_path(@issue)
     end

@@ -19,7 +19,7 @@ module CosmosysAdr
       if save_relation(relation)
         flash[:notice] = l(:notice_cosmosys_adr_linked, label: adr.cosmosys_adr_label)
       else
-        flash[:error] = relation.errors.full_messages.join(' ')
+        flash[:error] = ERB::Util.html_escape(relation.errors.full_messages.join(' '))
       end
       redirect_to issue_path(@issue)
     end

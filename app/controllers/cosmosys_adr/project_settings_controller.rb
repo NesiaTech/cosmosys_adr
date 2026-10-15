@@ -15,7 +15,7 @@ module CosmosysAdr
       if setting.save(context: :settings_form)
         flash[:notice] = l(:notice_successful_update)
       else
-        flash[:error] = setting.errors.full_messages.join(' ')
+        flash[:error] = ERB::Util.html_escape(setting.errors.full_messages.join(' '))
       end
       redirect_to settings_project_path(@project, tab: 'cosmosys_adr')
     end
