@@ -45,7 +45,7 @@ class CosmosysAdrIssuesControllerTest < Redmine::ControllerTest
     assert_select '.cosmosys-adr-number .value', text: 'ADR-0002'
     assert_select '.cosmosys-adr-lock-open'
     assert_select '.cosmosys-adr-decision-makers .value', text: 'tech lead'
-    assert_select '.cosmosys-adr-banner', text: /ADR-0001/
+    assert_select '.cosmosys-adr-banner a.cosmosys-adr-ref', text: /ADR-0001/
     assert_select 'form.cosmosys-adr-transition-form input[name=to][value=accept]'
     assert_select 'table.cosmosys-adr-links td.subject', text: /Implement the decision/
   end
@@ -57,7 +57,7 @@ class CosmosysAdrIssuesControllerTest < Redmine::ControllerTest
 
     assert_select '.cosmosys-adr-lock-closed'
     assert_select '.cosmosys-adr-superseded-by .value a', text: /ADR-0002/
-    assert_select '.flash.warning.cosmosys-adr-banner', text: /ADR-0002/
+    assert_select '.flash.warning.cosmosys-adr-banner a.cosmosys-adr-ref', text: /ADR-0002/
     assert_select 'form.cosmosys-adr-transition-form', 0
     assert_select '#history ul.journal-details li', text: /Superseded by.*ADR-0002/
   end

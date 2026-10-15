@@ -5,14 +5,16 @@
 <% setting = CosmosysAdr::ProjectSetting.for(issue.project) %>
 <% allowed = issue.new_statuses_allowed_to(User.current).filter_map { |status| CosmosysAdr.status_key(status) } %>
 <% entries = CosmosysAdr::Links.for_adr(issue, User.current) %>
+<%# The banners use t, not l: with a key ending in _html it escapes what it
+    interpolates unless it is already safe, and marks the result safe. %>
 <hr />
 <div class="cosmosys-adr-panel" id="cosmosys-adr-panel">
   <% if status_key == :superseded && successor %>
-    <div class="flash warning cosmosys-adr-banner"><%= l(:text_cosmosys_adr_superseded_banner_html, link: cosmosys_adr_link(successor)) %></div>
+    <div class="flash warning cosmosys-adr-banner"><%= t(:text_cosmosys_adr_superseded_banner_html, link: cosmosys_adr_link(successor)) %></div>
   <% elsif supersedes && status_key == :proposed %>
-    <div class="flash info cosmosys-adr-banner"><%= l(:text_cosmosys_adr_will_supersede_html, link: cosmosys_adr_link(supersedes)) %></div>
+    <div class="flash info cosmosys-adr-banner"><%= t(:text_cosmosys_adr_will_supersede_html, link: cosmosys_adr_link(supersedes)) %></div>
   <% elsif supersedes %>
-    <div class="flash info cosmosys-adr-banner"><%= l(:text_cosmosys_adr_supersedes_banner_html, link: cosmosys_adr_link(supersedes)) %></div>
+    <div class="flash info cosmosys-adr-banner"><%= t(:text_cosmosys_adr_supersedes_banner_html, link: cosmosys_adr_link(supersedes)) %></div>
   <% end %>
 
   <div class="cosmosys-adr-actions">
