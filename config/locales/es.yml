@@ -2,9 +2,20 @@ es:
   project_module_adrs: "ADRs"
   permission_view_adrs: "Ver la pestaña ADRs"
 
+  label_cosmosys_adr_settings: "ADRs"
   label_cosmosys_adr_item_profile: "ADR"
   text_cosmosys_adr_item_profile: "Registro de decisión de arquitectura de cosmoSys ADR. No aparece en el árbol, el informe, la numeración de capítulos ni los diagramas; solo un administrador puede borrarlo."
 
   field_cosmosys_adr_project_setting_template: "Plantilla"
   field_cosmosys_adr_project_setting_decider_role_ids: "Roles que deciden"
   field_decider_role_ids: "Roles que deciden"
+
+  label_cosmosys_adr_format_nygard: "Nygard"
+  label_cosmosys_adr_format_madr: "MADR"
+  label_cosmosys_adr_template: "Plantilla"
+  label_cosmosys_adr_deciders_setting: "Pueden aceptar, rechazar y retirar"
+  label_cosmosys_adr_tree_report: "Mostrar en árbol e informe"
+
+  text_cosmosys_adr_template_help: "Se usa en los ADRs nuevos. Los existentes conservan su formato."
+  text_cosmosys_adr_deciders_setting_help: "Roles del proyecto. Se guardan por identificador, así que renombrar o traducir un rol no los cambia."
+  text_cosmosys_adr_tree_report_help: "Llegará en una versión posterior. Los ADRs no salen en el árbol ni en el informe de cosmoSys."

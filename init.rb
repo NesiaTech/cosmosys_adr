@@ -23,16 +23,19 @@ end
 
 require_dependency 'project'
 require_dependency 'enabled_module'
+require_dependency 'projects_helper'
 require_dependency File.expand_path('lib/cosmosys_adr', __dir__)
 require_dependency File.expand_path('app/models/cosmosys_adr/project_setting', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/profile_registration', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/module_sync', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/project_patch', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/enabled_module_patch', __dir__)
+require_dependency File.expand_path('lib/cosmosys_adr/projects_helper_patch', __dir__)
 
 patch_cosmosys_adr = proc do
   Project.include CosmosysAdr::ProjectPatch unless Project < CosmosysAdr::ProjectPatch
   EnabledModule.include CosmosysAdr::EnabledModulePatch unless EnabledModule < CosmosysAdr::EnabledModulePatch
+  ProjectsHelper.prepend CosmosysAdr::ProjectsHelperPatch unless ProjectsHelper < CosmosysAdr::ProjectsHelperPatch
 end
 
 patch_cosmosys_adr.call
