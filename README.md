@@ -92,4 +92,6 @@ When the deployment moves its pins, move `DEPLOY_REVISION` in a commit of its ow
 
 ## Licence
 
-GNU General Public License version 3; see [`LICENSE`](LICENSE).
+Copyright (C) 2026 Nesia Tech
+
+cosmosys_adr is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License, version 3 only, as published by the Free Software Foundation (`GPL-3.0-only`). It is distributed in the hope that it will be useful, but without any warranty; see [`LICENSE`](LICENSE) for the full terms.
