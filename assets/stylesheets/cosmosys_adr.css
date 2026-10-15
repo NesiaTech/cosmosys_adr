@@ -28,9 +28,53 @@ a.cosmosys-adr-ref-retired { text-decoration: line-through; text-decoration-colo
   font-style: italic;
 }
 
+.cosmosys-adr-lock {
+  border: 1px solid #ced4da;
+  border-radius: 3px;
+  display: inline-block;
+  font-size: 0.85em;
+  padding: 0 0.5em;
+}
+
+.cosmosys-adr-lock-closed { color: #495057; }
+.cosmosys-adr-lock-open { border-color: #d0ebff; color: #1864ab; }
+
+.cosmosys-adr-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.5rem 0 1rem;
+}
+
+.cosmosys-adr-transition-form,
 .cosmosys-adr-inline-form { display: inline; margin: 0; }
 
+a.cosmosys-adr-button,
+.cosmosys-adr-button {
+  background: #fff;
+  border: 1px solid #ced4da;
+  border-radius: 3px;
+  color: #212529;
+  cursor: pointer;
+  display: inline-block;
+  font-size: 0.9em;
+  padding: 0.2rem 0.7rem;
+  text-decoration: none;
+}
+
+.cosmosys-adr-button-primary { background: #3a78a3; border-color: #3a78a3; color: #fff; }
+.cosmosys-adr-button-danger { border-color: #c92a2a; color: #c92a2a; }
 .cosmosys-adr-hint { color: #868e96; font-size: 0.9em; }
+.cosmosys-adr-banner { margin: 0.5rem 0; }
 
 table.cosmosys-adr-links td.cosmosys-adr-number { font-family: monospace; white-space: nowrap; }
 table.cosmosys-adr-links td.subject { text-align: left; }
+
+.cosmosys-adr-locked-notice {
+  background: #fff9db;
+  border: 1px solid #ffe066;
+  padding: 0.4rem 0.6rem;
+}
+
+.cosmosys-adr-fields .cosmosys-adr-static { display: inline-block; padding-top: 0.2rem; }

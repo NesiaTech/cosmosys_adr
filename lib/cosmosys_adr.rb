@@ -81,6 +81,12 @@ module CosmosysAdr
     project.present? && project.module_enabled?(MODULE_NAME).present?
   end
 
+  def adr_creatable?(project, user)
+    adr_tracker = tracker
+    module_enabled?(project) && adr_tracker.present? &&
+      Issue.allowed_target_trackers(project, user).include?(adr_tracker)
+  end
+
   def decider?(user, project)
     return false if user.nil? || project.nil?
     return true if user.admin?

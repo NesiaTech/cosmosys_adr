@@ -1,3 +1,5 @@
-<% unless issue.cosmosys_adr? %>
+<% if issue.cosmosys_adr? %>
+  <%= render partial: 'hooks/cosmosys_adr/adr_panel', locals: { issue: issue } %>
+<% else %>
   <%= render partial: 'hooks/cosmosys_adr/linked_adrs', locals: { issue: issue } %>
 <% end %>

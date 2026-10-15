@@ -26,6 +26,7 @@ require_dependency 'journal'
 require_dependency 'project'
 require_dependency 'enabled_module'
 require_dependency 'projects_helper'
+require_dependency 'issues_helper'
 require_dependency 'application_helper'
 require_dependency File.expand_path('lib/cosmosys_adr', __dir__)
 require_dependency File.expand_path('app/models/cosmosys_adr/project_setting', __dir__)
@@ -44,6 +45,7 @@ require_dependency File.expand_path('lib/cosmosys_adr/journal_patch', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/project_patch', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/enabled_module_patch', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/projects_helper_patch', __dir__)
+require_dependency File.expand_path('lib/cosmosys_adr/issues_helper_patch', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/ods_fields', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/hooks', __dir__)
 require_dependency File.expand_path('app/helpers/cosmosys_adr/adrs_helper', __dir__)
@@ -60,6 +62,7 @@ patch_cosmosys_adr = proc do
   Project.include CosmosysAdr::ProjectPatch unless Project < CosmosysAdr::ProjectPatch
   EnabledModule.include CosmosysAdr::EnabledModulePatch unless EnabledModule < CosmosysAdr::EnabledModulePatch
   ProjectsHelper.prepend CosmosysAdr::ProjectsHelperPatch unless ProjectsHelper < CosmosysAdr::ProjectsHelperPatch
+  IssuesHelper.prepend CosmosysAdr::IssuesHelperPatch unless IssuesHelper < CosmosysAdr::IssuesHelperPatch
   ApplicationHelper.include CosmosysAdr::AdrsHelper unless ApplicationHelper < CosmosysAdr::AdrsHelper
 end
 

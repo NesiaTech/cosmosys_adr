@@ -1,0 +1,49 @@
+<% if issue.cosmosys_adr? && issue.project %>
+  <% setting = CosmosysAdr::ProjectSetting.for(issue.project) %>
+  <fieldset class="box tabular cosmosys-adr-fields" data-cosmosys-adr-locked="<%= issue.cosmosys_adr_locked? %>">
+    <legend><%= l(:label_cosmosys_adr_fields) %></legend>
+    <% if issue.cosmosys_adr_locked? %>
+      <p class="cosmosys-adr-locked-notice"><%= l(:text_cosmosys_adr_locked_form, label: issue.cosmosys_adr_label) %></p>
+      <p><label><%= l(:field_adr_number) %></label><span class="cosmosys-adr-static"><%= issue.cosmosys_adr_label %></span></p>
+      <p><label><%= l(:field_adr_format) %></label><span class="cosmosys-adr-static"><%= cosmosys_adr_format_label(issue.adr_format) %></span></p>
+      <p><label><%= l(:field_adr_date) %></label><span class="cosmosys-adr-static"><%= issue.adr_date ? format_date(issue.adr_date) : '-' %></span></p>
+      <% if issue.adr_in_force_until %>
+        <p><label><%= l(:field_adr_in_force_until) %></label><span class="cosmosys-adr-static"><%= format_date(issue.adr_in_force_until) %></span></p>
+      <% end %>
+    <% else %>
+      <p>
+        <label><%= l(:field_adr_number) %></label>
+        <span class="cosmosys-adr-static"><%= issue.adr_number ? issue.cosmosys_adr_label : l(:text_cosmosys_adr_number_on_save) %></span>
+        <em class="info"><%= l(:text_cosmosys_adr_number_help) %></em>
+      </p>
+      <p>
+        <label><%= l(:field_adr_format) %></label>
+        <span class="cosmosys-adr-static"><%= cosmosys_adr_format_label(issue.cosmosys_adr_format) %></span>
+        <em class="info"><%= l(:text_cosmosys_adr_format_help) %></em>
+      </p>
+      <p>
+        <label><%= l(:field_adr_date) %></label>
+        <span class="cosmosys-adr-static">-</span>
+        <em class="info"><%= l(:text_cosmosys_adr_date_help) %></em>
+      </p>
+      <% supersedable = issue.cosmosys_adr_supersedable.to_a %>
+      <% supersedable.unshift(issue.adr_supersedes) if issue.adr_supersedes&.visible? && !supersedable.include?(issue.adr_supersedes) %>
+      <p>
+        <%= form.select :adr_supersedes_id,
+                        supersedable.map { |adr| ["#{adr.cosmosys_adr_label} #{adr.subject}", adr.id] },
+                        include_blank: l(:label_none) %>
+        <em class="info"><%= l(:text_cosmosys_adr_supersedes_help) %></em>
+      </p>
+      <% if issue.cosmosys_adr_madr? %>
+        <p><%= form.text_field :adr_decision_makers, size: 60 %></p>
+        <p><%= form.text_field :adr_consulted, size: 60 %></p>
+        <p><%= form.text_field :adr_informed, size: 60 %></p>
+      <% end %>
+      <p>
+        <label><%= l(:label_cosmosys_adr_deciders) %></label>
+        <span class="cosmosys-adr-static"><%= cosmosys_adr_role_names(setting) %></span>
+        <em class="info"><%= l(:text_cosmosys_adr_deciders_help) %></em>
+      </p>
+    <% end %>
+  </fieldset>
+<% end %>
