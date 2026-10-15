@@ -18,7 +18,7 @@
   <% end %>
 
   <div class="cosmosys-adr-actions">
-    <% if issue.editable?(User.current) %>
+    <% if issue.attributes_editable?(User.current) %>
       <% if status_key == :proposed %>
         <% if allowed.include?(:accepted) %><%= cosmosys_adr_transition_button(issue, 'accept', 'cosmosys-adr-button-primary') %><% end %>
         <% if allowed.include?(:rejected) %><%= cosmosys_adr_transition_button(issue, 'reject', 'cosmosys-adr-button-danger') %><% end %>
