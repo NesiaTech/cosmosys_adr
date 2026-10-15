@@ -93,6 +93,25 @@ class CosmosysAdrMentionIndexTest < ActiveSupport::TestCase
 
     assert CosmosysAdr::Links.for_adr(@adr, User.find(@developer.id)).any? { |entry| entry.issue == bug }
     assert_not CosmosysAdr::Links.for_adr(@adr, User.find(@reporter.id)).any? { |entry| entry.issue == bug }
+    assert_equal 1, CosmosysAdr::Links.counts([fresh(@adr)], User.find(@developer.id))[@adr.id]
+    assert_equal 0, CosmosysAdr::Links.counts([fresh(@adr)], User.find(@reporter.id))[@adr.id]
+  end
+
+  def test_a_mention_in_a_custom_field_the_user_cannot_see_stays_hidden
+    field = IssueCustomField.create!(name: 'Internal notes', field_format: 'text', is_for_all: true,
+                                     trackers: [@bug_tracker], visible: false, role_ids: [@manager_role.id])
+    # Written by a manager, who can see and edit the field.
+    User.current = @manager
+    bug = create_bug(Project.find(@project.id), author: @manager, custom_field_values: { field.id.to_s => 'See ADR#0001' })
+    User.current = nil
+
+    assert_equal [["cf:#{field.id}", @project.id, 1]], mentions_of(bug)
+    assert_includes CosmosysAdr::Links.for_adr(@adr, User.find(@manager.id)).map(&:issue), bug
+    assert_not_includes CosmosysAdr::Links.for_adr(@adr, User.find(@developer.id)).map(&:issue), bug
+    assert_empty CosmosysAdr::Links.for_issue(fresh(bug), User.find(@developer.id))
+    assert_equal 0, CosmosysAdr::Links.counts([fresh(@adr)], User.find(@developer.id))[@adr.id]
+  ensure
+    User.current = nil
   end
 
   def test_deleting_the_issue_deletes_its_mentions

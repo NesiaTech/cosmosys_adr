@@ -62,11 +62,12 @@ module CosmosysAdr
         end
         linked[relation.issue_to_id] << relation.issue_from_id if ids.include?(relation.issue_to_id)
       end
+      # Only mentions the user may see count, as in the lists of for_adr.
       by_target = adrs.index_by { |adr| [adr.project_id, adr.adr_number] }
       CosmosysAdr::Mention.where(target_project_id: adrs.map(&:project_id).uniq, target_number: adrs.map(&:adr_number))
-                          .pluck(:target_project_id, :target_number, :issue_id).each do |project_id, number, issue_id|
-        adr = by_target[[project_id, number]]
-        linked[adr.id] << issue_id if adr && adr.id != issue_id
+                          .includes(:journal, issue: :project).each do |mention|
+        adr = by_target[[mention.target_project_id, mention.target_number]]
+        linked[adr.id] << mention.issue_id if adr && adr.id != mention.issue_id && mention.visible?(user)
       end
       visible = Issue.visible(user).where(id: linked.values.flat_map(&:to_a).uniq).pluck(:id).to_set
       adrs.to_h { |adr| [adr.id, (linked[adr.id] & visible).size] }
