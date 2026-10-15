@@ -6,6 +6,9 @@ es:
   label_cosmosys_adr_item_profile: "ADR"
   text_cosmosys_adr_item_profile: "Registro de decisión de arquitectura de cosmoSys ADR. No aparece en el árbol, el informe, la numeración de capítulos ni los diagramas; solo un administrador puede borrarlo."
 
+  field_adr_number: "Número"
+  field_adr_format: "Formato"
+  field_adr_source: "Origen"
   field_cosmosys_adr_project_setting_template: "Plantilla"
   field_cosmosys_adr_project_setting_decider_role_ids: "Roles que deciden"
   field_decider_role_ids: "Roles que deciden"
@@ -19,3 +22,9 @@ es:
   text_cosmosys_adr_template_help: "Se usa en los ADRs nuevos. Los existentes conservan su formato."
   text_cosmosys_adr_deciders_setting_help: "Roles del proyecto. Se guardan por identificador, así que renombrar o traducir un rol no los cambia."
   text_cosmosys_adr_tree_report_help: "Llegará en una versión posterior. Los ADRs no salen en el árbol ni en el informe de cosmoSys."
+
+  activerecord:
+    errors:
+      messages:
+        cosmosys_adr_tracker_change: "no puede convertir una petición en ADR ni un ADR en otro tipo de petición"
+        cosmosys_adr_immutable: "no puede cambiar una vez creado el ADR"

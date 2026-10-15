@@ -61,6 +61,30 @@ module CosmosysAdr
     def add_member(project, user, role)
       Member.create!(principal: user, project: project, role_ids: [role.id])
     end
+
+    def new_adr(project, author: @developer, subject: 'Use PostgreSQL', **attributes)
+      issue = Issue.new(project: project, tracker: @adr_tracker, author: author, subject: subject)
+      issue.assign_attributes(attributes)
+      issue
+    end
+
+    def create_adr(project, author: @developer, **attributes)
+      issue = new_adr(project, author: author, **attributes)
+      issue.save!
+      issue
+    end
+
+    def create_bug(project, author: @developer, subject: 'Implement the decision', **attributes)
+      Issue.create!(project: project, tracker: @bug_tracker, author: author, subject: subject, **attributes)
+    end
+
+    # A freshly loaded copy, as a new request would see it. Redmine keeps the
+    # journal being written in the object (init_journal uses ||=) and
+    # cosmoSys moves lock_version after a save, so tests that save the same
+    # issue twice work on fresh objects like the application does.
+    def fresh(issue)
+      Issue.find(issue.id)
+    end
   end
 end
 

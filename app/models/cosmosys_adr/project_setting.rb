@@ -1,8 +1,9 @@
 require 'json'
 
 module CosmosysAdr
-  # ADR settings of one project: the template of new ADRs and the roles
-  # that decide, stored by role id.
+  # ADR settings of one project: the template of new ADRs, the roles that
+  # decide (stored by role id) and the counter that numbers ADRs. The counter
+  # only moves forward, so a deleted ADR never gives its number away.
   class ProjectSetting < ApplicationRecord
     self.table_name = 'cosmosys_adr_project_settings'
 
@@ -12,6 +13,7 @@ module CosmosysAdr
 
     validates :project_id, presence: true, uniqueness: true
     validates :template, inclusion: { in: CosmosysAdr::FORMATS }
+    validates :last_number, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
     validate :validate_decider_roles
     # Saved from the settings tab, a project must keep at least one role that
     # decides, or nobody could ever accept an ADR there.
@@ -62,6 +64,20 @@ module CosmosysAdr
 
     def decider_roles
       Role.where(id: decider_role_ids).sorted.to_a
+    end
+
+    # Reserves the next ADR number under a row lock held until the caller's
+    # transaction ends. The number is also kept above any number already used
+    # in the project, so it never moves backwards.
+    def reserve_number!
+      save! if new_record?
+      with_lock do
+        used = Issue.where(project_id: project_id).maximum(:adr_number).to_i
+        number = [last_number.to_i, used].max + 1
+        self.last_number = [last_number.to_i, used, number].max
+        save!
+        number
+      end
     end
 
     private

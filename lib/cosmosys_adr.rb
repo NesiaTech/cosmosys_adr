@@ -5,6 +5,8 @@ module CosmosysAdr
   MODULE_NAME = 'adrs'.freeze
   FORMATS = %w[nygard madr].freeze
   DEFAULT_FORMAT = 'nygard'.freeze
+  SOURCE_COSMOSYS = 'cosmosys'.freeze
+  SOURCES = [SOURCE_COSMOSYS].freeze
 
   # Canonical names used when the migration creates or finds the statuses.
   # At runtime statuses are resolved through the ids stored by the migration.
@@ -55,6 +57,12 @@ module CosmosysAdr
     return nil if id.blank?
 
     status_ids.key(id.to_i)
+  end
+
+  def label(number)
+    return nil if number.blank?
+
+    format('ADR-%04d', number.to_i)
   end
 
   def module_enabled?(project)
