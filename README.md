@@ -6,7 +6,7 @@ cosmosys_adr lets a project keep its Architecture Decision Records (ADRs) next t
 
 ## Status
 
-Version 0.1.0, the first release. While the version is 0.x, a new minor version may change behaviour or data. This version manages ADRs inside cosmoSys. Keeping ADRs in a git repository (import, sync or export) is planned for a later version.
+Version 0.1.0, the first release. While the version is 0.x, a new minor version may change behaviour or data; [`CHANGELOG.md`](CHANGELOG.md) lists every change. This version manages ADRs inside cosmoSys. Keeping ADRs in a git repository (import, sync or export) is planned for a later version.
 
 ## Requirements
 
