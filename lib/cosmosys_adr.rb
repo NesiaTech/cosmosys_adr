@@ -18,6 +18,7 @@ module CosmosysAdr
     superseded: 'Superseded'
   }.freeze
   STATUS_KEYS = STATUS_NAMES.keys.freeze
+  RETIRED_STATUS_KEYS = %i[rejected deprecated superseded].freeze
 
   # Transitions a person can make, by role. Superseded is reached only through
   # CosmosysAdr::Supersession when the superseding ADR is accepted.
@@ -86,5 +87,12 @@ module CosmosysAdr
 
     role_ids = CosmosysAdr::ProjectSetting.for(project).decider_role_ids
     (user.roles_for_project(project).map(&:id) & role_ids).any?
+  end
+
+  def html_attribute(value)
+    # The text pipeline of cosmoSys and Redmine scans the HTML that resolvers
+    # return for `#CSID`, `#123` and `document:diN`. Encoding `#` and `:` keeps
+    # titles and subjects inside generated markup from being linked again.
+    ERB::Util.html_escape(value.to_s).gsub('#', '&#35;').gsub(':', '&#58;')
   end
 end

@@ -23,6 +23,7 @@ en:
 
   label_cosmosys_adr_format_nygard: "Nygard"
   label_cosmosys_adr_format_madr: "MADR"
+  label_cosmosys_adr_restricted_reference: "<restricted %{label}>"
   label_cosmosys_adr_template: "Template"
   label_cosmosys_adr_deciders_setting: "Can accept, reject and deprecate"
   label_cosmosys_adr_tree_report: "Show in tree and report"

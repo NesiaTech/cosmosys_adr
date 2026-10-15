@@ -23,6 +23,7 @@ es:
 
   label_cosmosys_adr_format_nygard: "Nygard"
   label_cosmosys_adr_format_madr: "MADR"
+  label_cosmosys_adr_restricted_reference: "<%{label} restringido>"
   label_cosmosys_adr_template: "Plantilla"
   label_cosmosys_adr_deciders_setting: "Pueden aceptar, rechazar y retirar"
   label_cosmosys_adr_tree_report: "Mostrar en árbol e informe"

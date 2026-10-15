@@ -29,6 +29,8 @@ require_dependency File.expand_path('lib/cosmosys_adr', __dir__)
 require_dependency File.expand_path('app/models/cosmosys_adr/project_setting', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/profile_registration', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/templates', __dir__)
+require_dependency File.expand_path('lib/cosmosys_adr/reference', __dir__)
+require_dependency File.expand_path('lib/cosmosys_adr/reference_renderer', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/supersession', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/module_sync', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/issue_patch', __dir__)
@@ -39,6 +41,9 @@ require_dependency File.expand_path('lib/cosmosys_adr/projects_helper_patch', __
 require_dependency File.expand_path('lib/cosmosys_adr/ods_fields', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/hooks', __dir__)
 
+Cosmosys::PresentationTextRegistry.register(:cosmosys_adr) do |text, project:, user:, formatter: nil|
+  CosmosysAdr::ReferenceRenderer.new(project: project, user: user).render(text)
+end
 Cosmosys::ProjectCopyReferenceRegistry.register(:adr_supersedes_id)
 
 patch_cosmosys_adr = proc do

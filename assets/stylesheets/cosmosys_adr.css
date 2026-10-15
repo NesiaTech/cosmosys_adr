@@ -1,0 +1,29 @@
+/* cosmosys_adr: ADR references and status pills. Colours follow Redmine's
+   default theme. */
+
+.cosmosys-adr-pill {
+  border-radius: 9px;
+  display: inline-block;
+  font-size: 0.85em;
+  font-weight: 600;
+  line-height: 1.5;
+  padding: 0 0.6em;
+  white-space: nowrap;
+}
+
+.cosmosys-adr-pill-proposed { background: #d0ebff; color: #1864ab; }
+.cosmosys-adr-pill-accepted { background: #d3f9d8; color: #2b8a3e; }
+.cosmosys-adr-pill-rejected { background: #ffe3e3; color: #c92a2a; }
+.cosmosys-adr-pill-deprecated { background: #e9ecef; color: #495057; }
+.cosmosys-adr-pill-superseded { background: #e5dbff; color: #5f3dc4; }
+.cosmosys-adr-pill-format,
+.cosmosys-adr-pill-unknown { background: #e9ecef; color: #495057; }
+
+a.cosmosys-adr-ref { font-weight: 600; }
+a.cosmosys-adr-ref-retired { text-decoration: line-through; text-decoration-color: #868e96; }
+.cosmosys-adr-ref-project { color: #868e96; font-size: 0.85em; font-weight: 600; }
+
+.cosmosys-adr-restricted {
+  color: #777;
+  font-style: italic;
+}
