@@ -232,8 +232,11 @@ module CosmosysAdr
     def cosmosys_adr_validate_supersedes(require_accepted:)
       return if adr_supersedes_id.blank?
 
+      # An ADR the user cannot see is as invalid as one that does not exist,
+      # with the same message, so the error reveals nothing about it.
       target = Issue.find_by(id: adr_supersedes_id)
-      valid = target.present? && target.cosmosys_adr? && target.project_id == project_id && target.id != id
+      valid = target.present? && target.visible?(cosmosys_adr_supersedes_viewer) && target.cosmosys_adr? &&
+              target.project_id == project_id && target.id != id
       unless valid
         errors.add(:adr_supersedes_id, :invalid)
         return
@@ -241,6 +244,14 @@ module CosmosysAdr
       return unless require_accepted && target.cosmosys_adr_status_key != :accepted
 
       errors.add(:adr_supersedes_id, :cosmosys_adr_supersedes_not_accepted)
+    end
+
+    # Who sets the ADR to supersede: the user of the form or the API or, for
+    # a new ADR created in code, its author.
+    def cosmosys_adr_supersedes_viewer
+      return @attributes_set_by || author || cosmosys_adr_actor if new_record?
+
+      cosmosys_adr_actor
     end
 
     def cosmosys_adr_validate_fields

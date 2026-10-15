@@ -51,6 +51,20 @@ class CosmosysAdrSupersessionTest < ActiveSupport::TestCase
     end
   end
 
+  def test_an_adr_the_user_cannot_see_cannot_be_superseded
+    @developer_role.update!(issues_visibility: 'default')
+    hidden = accepted_adr(@project, author: @manager, subject: 'Keep supplier terms private')
+    hidden.update_column(:is_private, true)
+    User.current = @developer
+    issue = new_adr(@project, adr_supersedes_id: hidden.id)
+
+    assert_not issue.save
+    assert issue.errors.added?(:adr_supersedes_id, :invalid)
+    assert_not issue.errors.added?(:adr_supersedes_id, :cosmosys_adr_supersedes_not_accepted)
+  ensure
+    User.current = nil
+  end
+
   def test_an_adr_that_is_no_longer_accepted_cannot_be_superseded_on_acceptance
     first = create_adr(@project, adr_supersedes_id: @old.id)
     second = create_adr(@project, adr_supersedes_id: @old.id)
