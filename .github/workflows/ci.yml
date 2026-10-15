@@ -3,9 +3,10 @@
 # The tests run in the image of a cosmoSys deployment, built from
 # cosmoSys_deploy at DEPLOY_REVISION, so they see the Redmine, cosmoSys,
 # cosmoSys Requirements and optional plugins a real instance runs, at the
-# revisions the deployment pins. The scripts are in .github/ci and run the
-# same way on any Docker host. Actions are pinned by commit, and Dependabot
-# moves the pins.
+# revisions the deployment pins. When NesiaTech has published that image
+# (DEPLOY_IMAGES), the tests start from it instead of building it. The scripts
+# are in .github/ci and run the same way on any Docker host. Actions are
+# pinned by commit, and Dependabot moves the pins.
 name: ci
 
 on:
@@ -29,6 +30,9 @@ env:
   # The cosmoSys_deploy commit whose pins the tests run on. Move it, in a
   # commit of its own, when the deployment moves its pins.
   DEPLOY_REVISION: c12e21a55d3351dafa6f529a912c157c05a46e5f
+  # Where NesiaTech publishes the deployment images, privately, under the
+  # names the deployment gives them.
+  DEPLOY_IMAGES: ghcr.io/nesiatech/cosmosys_deploy_images
 
 jobs:
   sources:
@@ -60,6 +64,9 @@ jobs:
     name: tests (${{ matrix.label }})
     runs-on: ubuntu-24.04
     timeout-minutes: 60
+    permissions:
+      contents: read
+      packages: read
     strategy:
       fail-fast: false
       matrix:
@@ -91,9 +98,22 @@ jobs:
 
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
 
-      # The cache of the test image holds every layer, the deployment's too,
-      # so a run only rebuilds what changed since the last one: nothing,
-      # unless the pins or the test image moved. Pull requests from forks
+      # Pull requests from forks may not reach the private images; they build
+      # the deployment instead, as does a revision with no image yet.
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        continue-on-error: true
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Find the deployment image
+        run: cosmosys_adr/.github/ci/deploy-image.sh deploy "$DEPLOY_IMAGES" >>"$GITHUB_ENV"
+
+      # The cache of the test image holds every layer it builds, the
+      # deployment's too when it builds it, so a run only rebuilds what
+      # changed since the last one: nothing, unless the pins, the deployment
+      # image or the test image moved. Pull requests from forks
       # only read it (the second line repeats cache-from for them), so they
       # cannot fill it and push the cache of main out.
       - name: Build the test image

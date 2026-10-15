@@ -31,8 +31,15 @@ variable "COSMOSYS_TOOLS" {
   default = ""
 }
 
-# The deployment image, exactly as cosmoSys_deploy builds it for an instance.
-# It is only a step towards the test image, so it is not exported.
+# A published image of the deployment to start from (deploy-image.sh). Empty,
+# the deployment is built here.
+variable "DEPLOY_IMAGE" {
+  default = ""
+}
+
+# The deployment image, exactly as cosmoSys_deploy builds it for an instance,
+# unless DEPLOY_IMAGE names a published one. It is only a step towards the
+# test image, so it is not exported.
 target "cosmosys" {
   context = DEPLOY_DIR
   target  = "cosmosys"
@@ -49,7 +56,7 @@ target "cosmosys" {
 target "test" {
   context  = CI_DIR
   contexts = {
-    cosmosys = "target:cosmosys"
+    cosmosys = DEPLOY_IMAGE != "" ? "docker-image://${DEPLOY_IMAGE}" : "target:cosmosys"
   }
   tags   = ["${CI_IMAGE}:${COSMOSYS_VARIANT}"]
   output = ["type=docker"]
