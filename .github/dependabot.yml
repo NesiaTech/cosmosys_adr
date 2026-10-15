@@ -1,0 +1,17 @@
+# Keeps the actions of the CI workflow up to date. They are pinned by
+# commit, and each pull request moves the commit and its version comment.
+# A release only becomes a candidate after a week, so a bad release has time
+# to be noticed and withdrawn first.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      actions:
+        patterns: ['*']
+    commit-message:
+      prefix: ci

@@ -4,7 +4,8 @@
 # cosmoSys_deploy at DEPLOY_REVISION, so they see the Redmine, cosmoSys,
 # cosmoSys Requirements and optional plugins a real instance runs, at the
 # revisions the deployment pins. The scripts are in .github/ci and run the
-# same way on any Docker host. Actions are pinned by commit.
+# same way on any Docker host. Actions are pinned by commit, and Dependabot
+# moves the pins.
 name: ci
 
 on:
