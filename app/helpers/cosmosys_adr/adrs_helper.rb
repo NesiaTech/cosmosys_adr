@@ -1,6 +1,6 @@
 module CosmosysAdr
-  # View helpers of the ADR panels on issue pages. Included into
-  # ApplicationHelper so hook partials can use them.
+  # View helpers shared by the ADR tab, the issue hooks and the settings tab.
+  # Included into ApplicationHelper so hook partials can use them.
   module AdrsHelper
     def cosmosys_adr_status_pill(issue)
       key = issue.cosmosys_adr_status_key
@@ -9,6 +9,14 @@ module CosmosysAdr
         text = l(:label_cosmosys_adr_superseded_by_pill, label: successor.cosmosys_adr_label)
       end
       content_tag(:span, text, class: "cosmosys-adr-pill cosmosys-adr-pill-#{key || 'unknown'}")
+    end
+
+    def cosmosys_adr_status_key_pill(key, text)
+      content_tag(:span, text, class: "cosmosys-adr-pill cosmosys-adr-pill-#{key}")
+    end
+
+    def cosmosys_adr_status_label(key)
+      CosmosysAdr.status(key)&.name || CosmosysAdr::STATUS_NAMES.fetch(key)
     end
 
     def cosmosys_adr_format_pill(format)
@@ -41,6 +49,19 @@ module CosmosysAdr
 
     def cosmosys_adr_origin_label(entry)
       entry.explicit? ? l(:label_cosmosys_adr_origin_link) : l(:label_cosmosys_adr_origin_mention)
+    end
+
+    # One line describing a journal of an ADR for the "latest changes" list.
+    def cosmosys_adr_journal_summary(journal)
+      status_detail = journal.details.detect { |detail| detail.property == 'attr' && detail.prop_key == 'status_id' }
+      if status_detail
+        from = IssueStatus.find_by(id: status_detail.old_value)&.name
+        to = IssueStatus.find_by(id: status_detail.value)&.name
+        return from ? "#{from} → #{to}" : to.to_s
+      end
+      return l(:label_cosmosys_adr_note_added) if journal.notes.present?
+
+      l(:label_cosmosys_adr_updated)
     end
 
     def cosmosys_adr_transition_button(issue, action, css_class)

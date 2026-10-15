@@ -81,6 +81,19 @@ module CosmosysAdr
     project.present? && project.module_enabled?(MODULE_NAME).present?
   end
 
+  # The ADR tab is shown where the module is on and the user can see issues of
+  # the csAdr tracker.
+  def adrs_viewable?(project, user)
+    return false unless module_enabled?(project)
+
+    adr_tracker = tracker
+    return false unless adr_tracker
+
+    user.allowed_to?(:view_issues, project) do |role, _user|
+      role.permissions_all_trackers?(:view_issues) || role.permissions_tracker_ids?(:view_issues, adr_tracker.id)
+    end
+  end
+
   def adr_creatable?(project, user)
     adr_tracker = tracker
     module_enabled?(project) && adr_tracker.present? &&

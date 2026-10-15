@@ -1,0 +1,106 @@
+<div class="contextual">
+  <% if CosmosysAdr.adr_creatable?(@project, User.current) %>
+    <%= link_to sprite_icon('add', l(:label_cosmosys_adr_new)), new_project_issue_path(@project, issue: { tracker_id: @tracker.id }), class: 'icon icon-add cosmosys-adr-new' %>
+  <% end %>
+</div>
+
+<h2><%= l(:label_cosmosys_adr_plural) %></h2>
+
+<%= form_tag(project_cosmosys_adrs_path(@project), method: :get, id: 'cosmosys-adr-filters') do %>
+  <%= hidden_field_tag 'filtered', '1' %>
+  <fieldset class="box cosmosys-adr-filters">
+    <legend><%= l(:label_filter_plural) %></legend>
+    <p class="cosmosys-adr-filter-row">
+      <span class="cosmosys-adr-filter-label"><%= l(:field_status) %></span>
+      <% CosmosysAdr::STATUS_KEYS.each do |key| %>
+        <label class="inline"><%= check_box_tag 'status[]', key, @status_filter.include?(key), id: "cosmosys_adr_status_#{key}" %> <%= cosmosys_adr_status_label(key) %></label>
+      <% end %>
+    </p>
+    <p class="cosmosys-adr-filter-row">
+      <label class="cosmosys-adr-filter-label" for="cosmosys_adr_title"><%= l(:field_subject) %></label>
+      <%= text_field_tag 'title', @title_filter, id: 'cosmosys_adr_title', placeholder: l(:label_contains), size: 30 %>
+      <label class="cosmosys-adr-filter-label" for="cosmosys_adr_format"><%= l(:field_adr_format) %></label>
+      <%= select_tag 'format_filter', options_for_select([[l(:label_all), '']] + CosmosysAdr::FORMATS.map { |format| [cosmosys_adr_format_label(format), format] }, @format_filter), id: 'cosmosys_adr_format' %>
+      <label class="inline"><%= check_box_tag 'content', '1', @show_content, id: 'cosmosys_adr_content' %> <%= l(:label_cosmosys_adr_show_content) %></label>
+    </p>
+    <p class="buttons">
+      <%= submit_tag l(:button_apply), name: nil, class: 'button-small' %>
+      <%= link_to l(:button_clear), project_cosmosys_adrs_path(@project), class: 'icon icon-reload' %>
+    </p>
+  </fieldset>
+<% end %>
+
+<% if @adrs.empty? %>
+  <p class="nodata"><%= l(:text_cosmosys_adr_none_match) %></p>
+<% else %>
+  <div class="autoscroll">
+    <table class="list cosmosys-adr-list">
+      <thead>
+        <tr>
+          <th><%= l(:field_adr_number) %></th>
+          <th><%= l(:field_subject) %></th>
+          <th><%= l(:field_status) %></th>
+          <th><%= l(:field_adr_format) %></th>
+          <th><%= l(:field_adr_date) %></th>
+          <th><%= l(:field_adr_in_force_until) %></th>
+          <th><%= l(:field_adr_decision_makers) %></th>
+          <th><%= l(:label_cosmosys_adr_issues) %></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @adrs.each do |adr| %>
+          <tr class="<%= cycle('odd', 'even') %> cosmosys-adr-row" id="adr-<%= adr.adr_number %>">
+            <td class="cosmosys-adr-number"><%= link_to adr.cosmosys_adr_label, issue_path(adr) %></td>
+            <td class="subject"><%= link_to adr.subject, issue_path(adr) %></td>
+            <td><%= cosmosys_adr_status_pill(adr) %></td>
+            <td><%= cosmosys_adr_format_pill(adr.adr_format) %></td>
+            <td><%= adr.adr_date ? format_date(adr.adr_date) : '-' %></td>
+            <td><%= adr.adr_in_force_until ? format_date(adr.adr_in_force_until) : '-' %></td>
+            <td class="cosmosys-adr-people"><%= adr.adr_decision_makers.presence || '-' %></td>
+            <td><%= @link_counts[adr.id].to_i.positive? ? @link_counts[adr.id] : '-' %></td>
+          </tr>
+          <% if @show_content %>
+            <tr class="cosmosys-adr-content-row">
+              <td></td>
+              <td colspan="7"><div class="wiki cosmosys-adr-content"><%= textilizable(adr, :description, attachments: adr.attachments) %></div></td>
+            </tr>
+          <% end %>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% end %>
+<p class="cosmosys-adr-count"><%= l(:label_cosmosys_adr_count, shown: @adrs.size, total: @all_adrs.size) %></p>
+
+<% content_for :sidebar do %>
+  <h3><%= l(:label_cosmosys_adr_this_project) %></h3>
+  <ul class="cosmosys-adr-sidebar-list">
+    <li><%= l(:label_cosmosys_adr_template) %>: <strong><%= cosmosys_adr_format_label(@setting.template) %></strong></li>
+    <li><%= l(:label_cosmosys_adr_deciders) %>: <strong><%= cosmosys_adr_role_names(@setting) %></strong></li>
+    <li><%= l(:label_cosmosys_adr_next_number) %>: <strong><%= CosmosysAdr.label([@setting.last_number.to_i, @all_adrs.map(&:adr_number).max.to_i].max + 1) %></strong></li>
+  </ul>
+
+  <h3><%= l(:label_cosmosys_adr_by_status) %></h3>
+  <ul class="cosmosys-adr-sidebar-list cosmosys-adr-counts">
+    <% CosmosysAdr::STATUS_KEYS.each do |key| %>
+      <li><%= cosmosys_adr_status_key_pill(key, cosmosys_adr_status_label(key)) %> <span class="count"><%= @counts[key] %></span></li>
+    <% end %>
+  </ul>
+
+  <h3><%= l(:label_cosmosys_adr_latest_changes) %></h3>
+  <% if @recent_journals.any? %>
+    <ul class="cosmosys-adr-sidebar-list cosmosys-adr-history">
+      <% @recent_journals.each do |journal| %>
+        <% adr = @adrs_by_id[journal.journalized_id] %>
+        <li>
+          <span class="cosmosys-adr-history-date"><%= format_date(journal.created_on) %></span>
+          <%= link_to adr.cosmosys_adr_label, issue_path(adr, anchor: "change-#{journal.id}") %>: <%= cosmosys_adr_journal_summary(journal) %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="nodata"><%= l(:label_no_data) %></p>
+  <% end %>
+<% end %>
+
+<% html_title(l(:label_cosmosys_adr_plural)) %>

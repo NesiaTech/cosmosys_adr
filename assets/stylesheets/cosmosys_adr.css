@@ -1,5 +1,5 @@
-/* cosmosys_adr: ADR references, status pills and the panels of the issue
-   page. Colours follow Redmine's default theme. */
+/* cosmosys_adr: ADR references, status pills, the ADR tab and the panels of
+   the issue page. Colours follow Redmine's default theme. */
 
 .cosmosys-adr-pill {
   border-radius: 9px;
@@ -68,8 +68,22 @@ a.cosmosys-adr-button,
 .cosmosys-adr-hint { color: #868e96; font-size: 0.9em; }
 .cosmosys-adr-banner { margin: 0.5rem 0; }
 
+.cosmosys-adr-filters .cosmosys-adr-filter-row { margin: 0.3rem 0; }
+.cosmosys-adr-filters .cosmosys-adr-filter-label { font-weight: 600; margin-right: 0.5rem; }
+.cosmosys-adr-filters label.inline { margin-right: 0.8rem; }
+
+table.cosmosys-adr-list td.cosmosys-adr-number,
 table.cosmosys-adr-links td.cosmosys-adr-number { font-family: monospace; white-space: nowrap; }
+table.cosmosys-adr-list td.subject,
 table.cosmosys-adr-links td.subject { text-align: left; }
+table.cosmosys-adr-list td.cosmosys-adr-people { text-align: left; }
+tr.cosmosys-adr-content-row td { text-align: left; }
+.cosmosys-adr-content { max-width: 80ch; padding: 0.3rem 0 0.8rem; }
+
+.cosmosys-adr-sidebar-list { list-style: none; margin: 0; padding: 0; }
+.cosmosys-adr-sidebar-list li { padding: 0.15rem 0; }
+.cosmosys-adr-counts li { display: flex; justify-content: space-between; }
+.cosmosys-adr-history-date { color: #868e96; margin-right: 0.3rem; }
 
 .cosmosys-adr-locked-notice {
   background: #fff9db;

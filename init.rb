@@ -15,10 +15,16 @@ Redmine::Plugin.register :cosmosys_adr do
   settings default: { 'status_ids' => {} }
 
   project_module :adrs do
-    # The module grants nothing by itself: who can see, create or edit ADRs
-    # is decided by Redmine's own issue permissions on the csAdr tracker.
-    permission :view_adrs, {}, public: true, read: true
+    # The ADR tab only lists ADRs. Who can see, create or edit them is decided
+    # by Redmine's own issue permissions on the csAdr tracker.
+    permission :view_adrs, { 'cosmosys_adr/adrs' => [:index] }, public: true, read: true
   end
+
+  menu :project_menu, :cosmosys_adrs, { controller: 'cosmosys_adr/adrs', action: 'index' },
+    caption: :label_cosmosys_adr_tab,
+    param: :project_id,
+    after: :cosmosys,
+    if: proc { |project| CosmosysAdr.adrs_viewable?(project, User.current) }
 end
 
 require_dependency 'issue'
