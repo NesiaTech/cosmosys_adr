@@ -1,0 +1,3 @@
+<% unless issue.cosmosys_adr? %>
+  <%= render partial: 'hooks/cosmosys_adr/linked_adrs', locals: { issue: issue } %>
+<% end %>

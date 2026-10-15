@@ -26,6 +26,7 @@ require_dependency 'journal'
 require_dependency 'project'
 require_dependency 'enabled_module'
 require_dependency 'projects_helper'
+require_dependency 'application_helper'
 require_dependency File.expand_path('lib/cosmosys_adr', __dir__)
 require_dependency File.expand_path('app/models/cosmosys_adr/project_setting', __dir__)
 require_dependency File.expand_path('app/models/cosmosys_adr/mention', __dir__)
@@ -35,6 +36,7 @@ require_dependency File.expand_path('lib/cosmosys_adr/reference', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/reference_renderer', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/mention_index', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/supersession', __dir__)
+require_dependency File.expand_path('lib/cosmosys_adr/links', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/module_sync', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/issue_patch', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/issue_workflow_patch', __dir__)
@@ -44,6 +46,7 @@ require_dependency File.expand_path('lib/cosmosys_adr/enabled_module_patch', __d
 require_dependency File.expand_path('lib/cosmosys_adr/projects_helper_patch', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/ods_fields', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/hooks', __dir__)
+require_dependency File.expand_path('app/helpers/cosmosys_adr/adrs_helper', __dir__)
 
 Cosmosys::PresentationTextRegistry.register(:cosmosys_adr) do |text, project:, user:, formatter: nil|
   CosmosysAdr::ReferenceRenderer.new(project: project, user: user).render(text)
@@ -57,6 +60,7 @@ patch_cosmosys_adr = proc do
   Project.include CosmosysAdr::ProjectPatch unless Project < CosmosysAdr::ProjectPatch
   EnabledModule.include CosmosysAdr::EnabledModulePatch unless EnabledModule < CosmosysAdr::EnabledModulePatch
   ProjectsHelper.prepend CosmosysAdr::ProjectsHelperPatch unless ProjectsHelper < CosmosysAdr::ProjectsHelperPatch
+  ApplicationHelper.include CosmosysAdr::AdrsHelper unless ApplicationHelper < CosmosysAdr::AdrsHelper
 end
 
 patch_cosmosys_adr.call

@@ -1,5 +1,5 @@
-/* cosmosys_adr: ADR references and status pills. Colours follow Redmine's
-   default theme. */
+/* cosmosys_adr: ADR references, status pills and the panels of the issue
+   page. Colours follow Redmine's default theme. */
 
 .cosmosys-adr-pill {
   border-radius: 9px;
@@ -27,3 +27,10 @@ a.cosmosys-adr-ref-retired { text-decoration: line-through; text-decoration-colo
   color: #777;
   font-style: italic;
 }
+
+.cosmosys-adr-inline-form { display: inline; margin: 0; }
+
+.cosmosys-adr-hint { color: #868e96; font-size: 0.9em; }
+
+table.cosmosys-adr-links td.cosmosys-adr-number { font-family: monospace; white-space: nowrap; }
+table.cosmosys-adr-links td.subject { text-align: left; }

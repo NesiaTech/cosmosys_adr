@@ -1,0 +1,53 @@
+<% entries = CosmosysAdr::Links.for_issue(issue, User.current) %>
+<% can_link = User.current.allowed_to?(:manage_issue_relations, issue.project) %>
+<% linkable = can_link ? CosmosysAdr::Links.linkable_adrs(User.current) : {} %>
+<%# Shown where ADRs are used: projects with the ADRs module, and issues that
+    already link to or mention an ADR. %>
+<% if entries.any? || (CosmosysAdr.module_enabled?(issue.project) && linkable.any?) %>
+  <hr />
+  <div class="cosmosys-adr-linked" id="cosmosys-adr-linked">
+    <% if can_link && linkable.any? %>
+      <div class="contextual">
+        <%= link_to_function sprite_icon('add', l(:button_add)), '$("#cosmosys-adr-link-form").toggle(); return false;', class: 'icon icon-add' %>
+      </div>
+    <% end %>
+    <p><strong><%= l(:label_cosmosys_adr_linked_adrs) %></strong></p>
+    <% if entries.any? %>
+      <table class="list cosmosys-adr-links">
+        <thead><tr><th><%= l(:label_cosmosys_adr) %></th><th><%= l(:field_subject) %></th><th><%= l(:field_status) %></th><th><%= l(:label_project) %></th><th><%= l(:label_cosmosys_adr_origin) %></th><th></th></tr></thead>
+        <tbody>
+          <% entries.each do |entry| %>
+            <tr class="<%= cycle('odd', 'even') %>">
+              <td class="cosmosys-adr-number"><%= cosmosys_adr_link(entry.issue, with_subject: false) %></td>
+              <td class="subject"><%= entry.issue.subject %></td>
+              <td><%= cosmosys_adr_status_pill(entry.issue) %></td>
+              <td><%= entry.issue.project %></td>
+              <td><%= cosmosys_adr_origin_label(entry) %></td>
+              <td class="buttons">
+                <% if entry.explicit? && can_link && entry.relation.deletable? %>
+                  <%= button_to l(:label_cosmosys_adr_unlink), issue_cosmosys_adr_link_path(issue, entry.relation), method: :delete, class: 'cosmosys-adr-unlink', form_class: 'cosmosys-adr-inline-form' %>
+                <% elsif !entry.explicit? %>
+                  <span class="cosmosys-adr-hint"><%= l(:text_cosmosys_adr_mention_in_text) %></span>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="nodata"><%= l(:text_cosmosys_adr_no_linked_adrs) %></p>
+    <% end %>
+    <% if can_link && linkable.any? %>
+      <%= form_tag(issue_cosmosys_adr_links_path(issue), id: 'cosmosys-adr-link-form', class: 'box tabular', style: 'display:none') do %>
+        <p>
+          <label for="cosmosys_adr_link_adr_id"><%= l(:label_cosmosys_adr) %></label>
+          <%= select_tag 'adr_id',
+                         grouped_options_for_select(linkable.map { |project, adrs| [project.name, adrs.map { |adr| ["#{adr.cosmosys_adr_label} #{adr.subject} (#{adr.status})", adr.id] }] }),
+                         id: 'cosmosys_adr_link_adr_id' %>
+          <em class="info"><%= l(:text_cosmosys_adr_link_help) %></em>
+        </p>
+        <p><%= submit_tag l(:button_cosmosys_adr_link) %></p>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

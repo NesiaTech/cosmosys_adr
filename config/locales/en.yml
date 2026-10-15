@@ -2,6 +2,7 @@ en:
   project_module_adrs: "ADRs"
   permission_view_adrs: "View the ADRs tab"
 
+  label_cosmosys_adr: "ADR"
   label_cosmosys_adr_settings: "ADRs"
   label_cosmosys_adr_item_profile: "ADR"
   text_cosmosys_adr_item_profile: "Architecture Decision Record supplied by cosmoSys ADR. Kept out of the tree, the report, chapter numbering and diagrams; only an administrator may delete one."
@@ -23,18 +24,33 @@ en:
 
   label_cosmosys_adr_format_nygard: "Nygard"
   label_cosmosys_adr_format_madr: "MADR"
+  label_cosmosys_adr_superseded_by_pill: "Superseded by %{label}"
   label_cosmosys_adr_restricted_reference: "<restricted %{label}>"
+  label_cosmosys_adr_linked_adrs: "Linked ADRs"
+  label_cosmosys_adr_origin: "Origin"
+  label_cosmosys_adr_origin_link: "Link"
+  label_cosmosys_adr_origin_mention: "Mention"
+  label_cosmosys_adr_unlink: "Remove"
   label_cosmosys_adr_template: "Template"
   label_cosmosys_adr_deciders_setting: "Can accept, reject and deprecate"
   label_cosmosys_adr_tree_report: "Show in tree and report"
 
+  button_cosmosys_adr_link: "Link"
+
+  text_cosmosys_adr_no_linked_adrs: "This issue does not link to or mention any ADR."
+  text_cosmosys_adr_mention_in_text: "in the text"
+  text_cosmosys_adr_link_help: "Only ADRs of projects you can see are listed. The link is a native related-to relation."
   text_cosmosys_adr_template_help: "Used by new ADRs. Existing ADRs keep their format."
   text_cosmosys_adr_deciders_setting_help: "Project roles, stored by id, so renaming or translating a role does not change this setting."
   text_cosmosys_adr_tree_report_help: "Coming in a later version. ADRs do not appear in the cosmoSys tree or report."
 
+  notice_cosmosys_adr_linked: "%{label} linked."
+  notice_cosmosys_adr_unlinked: "Link with %{label} removed."
+
   error_cosmosys_adr_locked: "%{label} is no longer Proposed and its content cannot change: create a new ADR that supersedes it."
   error_cosmosys_adr_role_not_allowed: "Your roles cannot accept, reject or deprecate %{label} in this project."
   error_cosmosys_adr_module_disabled: "The ADRs module is not enabled in this project."
+  error_cosmosys_adr_link_target: "Choose an ADR you can see."
 
   activerecord:
     errors:
