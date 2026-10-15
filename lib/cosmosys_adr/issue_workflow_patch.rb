@@ -35,6 +35,21 @@ module CosmosysAdr
       end
     end
 
+    def copy_from(arg, options = {})
+      super.tap do
+        next unless cosmosys_adr?
+
+        # A copy of an ADR is a new proposal: new number, no supersession and
+        # no decision yet.
+        self.adr_number = nil
+        self.adr_supersedes_id = nil
+        self.adr_source = nil
+        self.adr_date = nil
+        self.adr_in_force_until = nil
+        @cosmosys_adr_restore = false
+      end
+    end
+
     # Attachments are part of what a decided ADR says.
     def attachments_addable?(user = User.current)
       return false if cosmosys_adr_locked?

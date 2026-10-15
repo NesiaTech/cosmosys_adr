@@ -76,6 +76,21 @@ class CosmosysAdrNumberingTest < ActiveSupport::TestCase
 
     assert_equal 3, create_adr(@project).adr_number
   end
+
+  def test_a_copy_of_an_adr_gets_a_new_number_and_starts_proposed
+    original = accepted_adr(@project)
+    User.current = @developer
+    copy = Issue.new.copy_from(original)
+    copy.send(:safe_attributes=, { 'subject' => 'Copied' }, @developer)
+    copy.save!
+
+    assert_equal 2, copy.adr_number
+    assert_equal :proposed, copy.cosmosys_adr_status_key
+    assert_nil copy.adr_supersedes_id
+    assert_nil copy.adr_date
+  ensure
+    User.current = nil
+  end
 end
 
 # Real concurrency needs separate connections and committed rows, so this

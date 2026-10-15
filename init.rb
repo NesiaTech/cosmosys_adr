@@ -36,6 +36,10 @@ require_dependency File.expand_path('lib/cosmosys_adr/issue_workflow_patch', __d
 require_dependency File.expand_path('lib/cosmosys_adr/project_patch', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/enabled_module_patch', __dir__)
 require_dependency File.expand_path('lib/cosmosys_adr/projects_helper_patch', __dir__)
+require_dependency File.expand_path('lib/cosmosys_adr/ods_fields', __dir__)
+require_dependency File.expand_path('lib/cosmosys_adr/hooks', __dir__)
+
+Cosmosys::ProjectCopyReferenceRegistry.register(:adr_supersedes_id)
 
 patch_cosmosys_adr = proc do
   Issue.include CosmosysAdr::IssuePatch unless Issue < CosmosysAdr::IssuePatch

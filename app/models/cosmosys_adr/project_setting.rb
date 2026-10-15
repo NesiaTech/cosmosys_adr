@@ -38,6 +38,20 @@ module CosmosysAdr
       end
     end
 
+    # A copied project takes the template and the deciding roles of the
+    # original. The counter keeps the higher of both, so the copy never
+    # hands out a number the original had already used for one of its ADRs.
+    def self.copy!(source, destination)
+      original = find_by(project_id: source.id)
+      return unless original && destination&.persisted?
+
+      setting = for!(destination)
+      setting.template = original.template
+      setting.decider_role_ids = original.decider_role_ids
+      setting.last_number = [setting.last_number.to_i, original.last_number.to_i].max
+      setting.save!
+    end
+
     def self.template_for(project)
       project.present? ? self.for(project).template : CosmosysAdr::DEFAULT_FORMAT
     end
@@ -69,11 +83,11 @@ module CosmosysAdr
     # Reserves the next ADR number under a row lock held until the caller's
     # transaction ends. The number is also kept above any number already used
     # in the project, so it never moves backwards.
-    def reserve_number!
+    def reserve_number!(preferred = nil)
       save! if new_record?
       with_lock do
         used = Issue.where(project_id: project_id).maximum(:adr_number).to_i
-        number = [last_number.to_i, used].max + 1
+        number = preferred.to_i.positive? ? preferred.to_i : [last_number.to_i, used].max + 1
         self.last_number = [last_number.to_i, used, number].max
         save!
         number

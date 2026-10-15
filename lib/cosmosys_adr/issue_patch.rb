@@ -3,8 +3,8 @@ require_dependency 'issue'
 module CosmosysAdr
   # An ADR is an issue of the csAdr tracker. This patch numbers ADRs, keeps
   # their lifecycle and locks their content once they leave Proposed. Every
-  # rule is a model validation, so the form, bulk edit and the REST API all
-  # go through it.
+  # rule is a model validation, so the form, bulk edit, the REST API, ODS
+  # import, snapshot materialisation and project copies all go through it.
   module IssuePatch
     # What an ADR says. None of it may change once the ADR is decided.
     CONTENT_ATTRIBUTES = %w[
@@ -38,9 +38,10 @@ module CosmosysAdr
         before_create :cosmosys_adr_assign_number
         before_save :cosmosys_adr_stamp_dates
         before_save :cosmosys_adr_capture_changes
+        after_create :cosmosys_adr_mark_restored
         after_save :cosmosys_adr_apply_supersession
-        after_commit :cosmosys_adr_forget_request
-        after_rollback :cosmosys_adr_forget_request
+        after_commit :cosmosys_adr_forget_restored
+        after_rollback :cosmosys_adr_forget_restored
       end
     end
 
@@ -96,14 +97,23 @@ module CosmosysAdr
       @current_journal&.user || @attributes_set_by || User.current
     end
 
+    # Marks a new ADR as a faithful copy of an existing one (snapshot or ODS
+    # materialisation, project copy): it keeps its number and status. Only an
+    # administrator or a cosmoSys project copy can create ADRs that way.
+    def cosmosys_adr_restore!(number)
+      @cosmosys_adr_restore = true
+      self.adr_number = number.presence&.to_i
+    end
+
     private
 
     def cosmosys_adr_apply_defaults
       return unless cosmosys_adr?
 
       cosmosys_adr_apply_new_record_defaults(apply_template: false)
-      # A new ADR is a proposal: it has no decision yet.
-      STAMPED_ATTRIBUTES.each { |name| self[name] = nil }
+      # A new ADR is a proposal. A copy of a decided ADR keeps its dates, unless
+      # the copy starts it over in Proposed, as a clean working copy does.
+      STAMPED_ATTRIBUTES.each { |name| self[name] = nil } unless cosmosys_adr_restoring? && cosmosys_adr_status_key != :proposed
     end
 
     def cosmosys_adr_apply_new_record_defaults(apply_template:)
@@ -111,6 +121,19 @@ module CosmosysAdr
       self.adr_source ||= CosmosysAdr::SOURCE_COSMOSYS
       self.description = CosmosysAdr::Templates.for(adr_format) if apply_template && description.blank?
       MADR_ATTRIBUTES.each { |name| self[name] = nil } unless cosmosys_adr_madr?
+    end
+
+    def cosmosys_adr_restoring?
+      return false unless @cosmosys_adr_restore && adr_number.present?
+
+      Cosmosys::ProjectCopyContext.current.present? || cosmosys_adr_actor&.admin?
+    end
+
+    # Records restored inside the transaction that created them are still
+    # being written by their materialiser (deferred fields, rewritten
+    # references), so the lock does not apply to them until that commit.
+    def cosmosys_adr_restored_in_transaction?
+      @cosmosys_adr_restored_in_transaction == true
     end
 
     def cosmosys_adr_validate
@@ -125,6 +148,12 @@ module CosmosysAdr
     end
 
     def cosmosys_adr_validate_create
+      if cosmosys_adr_restoring?
+        taken = Issue.where(project_id: project_id, adr_number: adr_number).exists?
+        errors.add(:adr_number, :taken) if taken
+        return
+      end
+
       errors.add(:base, I18n.t(:error_cosmosys_adr_module_disabled)) unless CosmosysAdr.module_enabled?(project)
       unless cosmosys_adr_status_key == :proposed
         errors.add(:status_id, :cosmosys_adr_must_start_proposed)
@@ -133,6 +162,8 @@ module CosmosysAdr
     end
 
     def cosmosys_adr_validate_update
+      return if cosmosys_adr_restored_in_transaction?
+
       cosmosys_adr_validate_requested_status
 
       changed_identity = IDENTITY_ATTRIBUTES.select { |name| will_save_change_to_attribute?(name) }
@@ -211,13 +242,14 @@ module CosmosysAdr
       return unless cosmosys_adr?
 
       setting = CosmosysAdr::ProjectSetting.for!(project)
-      self.adr_number = setting.reserve_number!
+      self.adr_number = setting.reserve_number!(cosmosys_adr_restoring? ? adr_number : nil)
     end
 
     # Runs after validation, so the dates it writes are never taken for a
     # change made by hand.
     def cosmosys_adr_stamp_dates
       return unless cosmosys_adr? && persisted? && will_save_change_to_status_id?
+      return if cosmosys_adr_restored_in_transaction?
 
       today = cosmosys_adr_actor&.today || Date.current
       case cosmosys_adr_status_key
@@ -230,7 +262,8 @@ module CosmosysAdr
 
     def cosmosys_adr_capture_changes
       @cosmosys_adr_superseding = cosmosys_adr? && will_save_change_to_status_id? &&
-                                  cosmosys_adr_status_key == :accepted && adr_supersedes_id.present?
+                                  cosmosys_adr_status_key == :accepted && adr_supersedes_id.present? &&
+                                  !cosmosys_adr_restored_in_transaction?
       return unless @cosmosys_adr_superseding && current_journal
 
       current_journal.details << JournalDetail.new(
@@ -239,7 +272,13 @@ module CosmosysAdr
       )
     end
 
-    def cosmosys_adr_forget_request
+    def cosmosys_adr_mark_restored
+      @cosmosys_adr_restored_in_transaction = true if cosmosys_adr? && cosmosys_adr_restoring?
+    end
+
+    def cosmosys_adr_forget_restored
+      @cosmosys_adr_restored_in_transaction = false
+      @cosmosys_adr_restore = false
       @cosmosys_adr_requested_status_key = nil
     end
 
