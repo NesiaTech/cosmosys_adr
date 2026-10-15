@@ -65,6 +65,22 @@ class CosmosysAdrSupersessionTest < ActiveSupport::TestCase
     User.current = nil
   end
 
+  def test_accepting_needs_the_right_to_edit_the_superseded_adr
+    @developer_role.remove_permission!(:edit_issues)
+    @developer_role.add_permission!(:edit_own_issues)
+    others = accepted_adr(@project, author: @manager, subject: 'Keep sessions in memory')
+    new_adr = create_adr(@project, subject: 'Store sessions in Redis', adr_supersedes_id: others.id)
+
+    # A freshly loaded user, as in a request: the old object caches its roles.
+    developer = User.find(@developer.id)
+    error = assert_raises(ActiveRecord::RecordInvalid) { transition!(new_adr, :accepted, user: developer) }
+    assert error.record.errors.added?(:adr_supersedes_id, :cosmosys_adr_supersedes_not_editable)
+    assert_equal :accepted, others.reload.cosmosys_adr_status_key
+    assert_equal :proposed, new_adr.reload.cosmosys_adr_status_key
+    assert_equal :accepted, transition!(new_adr, :accepted, user: @manager).cosmosys_adr_status_key
+    assert_equal :superseded, others.reload.cosmosys_adr_status_key
+  end
+
   def test_an_adr_that_is_no_longer_accepted_cannot_be_superseded_on_acceptance
     first = create_adr(@project, adr_supersedes_id: @old.id)
     second = create_adr(@project, adr_supersedes_id: @old.id)

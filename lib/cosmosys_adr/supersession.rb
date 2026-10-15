@@ -25,7 +25,11 @@ module CosmosysAdr
     def call
       superseded = Issue.lock.find(adr.adr_supersedes_id)
       # Checked again under the row lock: another ADR may have superseded it
-      # since this one was validated.
+      # since this one was validated, or the user may have lost access to it.
+      unless superseded.visible?(user) && superseded.attributes_editable?(user)
+        adr.errors.add(:adr_supersedes_id, superseded.visible?(user) ? :cosmosys_adr_supersedes_not_editable : :invalid)
+        raise ActiveRecord::RecordInvalid, adr
+      end
       unless superseded.cosmosys_adr_status_key == :accepted && superseded.project_id == adr.project_id
         adr.errors.add(:adr_supersedes_id, :cosmosys_adr_supersedes_not_accepted)
         raise ActiveRecord::RecordInvalid, adr

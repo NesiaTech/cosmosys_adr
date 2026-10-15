@@ -100,3 +100,4 @@ es:
         cosmosys_adr_invalid_transition: "no es un paso válido para este ADR"
         cosmosys_adr_superseded_by_plugin: "solo pasa a Superseded cuando se acepta el ADR que lo sustituye"
         cosmosys_adr_supersedes_not_accepted: "debe ser un ADR aceptado del mismo proyecto"
+        cosmosys_adr_supersedes_not_editable: "debe ser un ADR que puedas editar, porque al aceptar este pasa a Superseded"

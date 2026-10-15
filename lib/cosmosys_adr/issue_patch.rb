@@ -241,9 +241,17 @@ module CosmosysAdr
         errors.add(:adr_supersedes_id, :invalid)
         return
       end
-      return unless require_accepted && target.cosmosys_adr_status_key != :accepted
+      if require_accepted && target.cosmosys_adr_status_key != :accepted
+        errors.add(:adr_supersedes_id, :cosmosys_adr_supersedes_not_accepted)
+      elsif cosmosys_adr_accepting? && !target.attributes_editable?(cosmosys_adr_actor)
+        # Accepting this ADR changes the status of the old one, so whoever
+        # accepts must be allowed to change it too.
+        errors.add(:adr_supersedes_id, :cosmosys_adr_supersedes_not_editable)
+      end
+    end
 
-      errors.add(:adr_supersedes_id, :cosmosys_adr_supersedes_not_accepted)
+    def cosmosys_adr_accepting?
+      persisted? && will_save_change_to_status_id? && cosmosys_adr_status_key == :accepted
     end
 
     # Who sets the ADR to supersede: the user of the form or the API or, for
