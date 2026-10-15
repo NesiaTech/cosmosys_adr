@@ -1,0 +1,22 @@
+<% if issue.cosmosys_adr? %>
+  <% supersedes = issue.adr_supersedes if issue.adr_supersedes&.visible? %>
+  <% successor = issue.cosmosys_adr_superseded_by %>
+  <% successor = nil unless successor&.visible? %>
+  <%= issue_fields_rows do |rows|
+        rows.left l(:field_adr_number), issue.cosmosys_adr_label, class: 'cosmosys-adr-number'
+        rows.left l(:field_adr_format), cosmosys_adr_format_pill(issue.adr_format), class: 'cosmosys-adr-format'
+        rows.left l(:field_adr_date), issue.adr_date ? format_date(issue.adr_date) : '-', class: 'cosmosys-adr-date'
+        if issue.adr_in_force_until
+          rows.left l(:field_adr_in_force_until), format_date(issue.adr_in_force_until), class: 'cosmosys-adr-in-force-until'
+        end
+        rows.right l(:label_cosmosys_adr_content), cosmosys_adr_lock_badge(issue), class: 'cosmosys-adr-content'
+        rows.right l(:field_status), cosmosys_adr_status_pill(issue), class: 'cosmosys-adr-status'
+        if issue.adr_format == 'madr'
+          rows.left l(:field_adr_decision_makers), issue.adr_decision_makers.presence || '-', class: 'cosmosys-adr-decision-makers'
+          rows.left l(:field_adr_consulted), issue.adr_consulted.presence || '-', class: 'cosmosys-adr-consulted'
+          rows.right l(:field_adr_informed), issue.adr_informed.presence || '-', class: 'cosmosys-adr-informed'
+        end
+        rows.left l(:field_adr_supersedes), supersedes ? cosmosys_adr_link(supersedes) : '-', class: 'cosmosys-adr-supersedes'
+        rows.right l(:field_adr_superseded_by), successor ? cosmosys_adr_link(successor) : '-', class: 'cosmosys-adr-superseded-by'
+      end %>
+<% end %>

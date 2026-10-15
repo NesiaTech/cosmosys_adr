@@ -1,0 +1,76 @@
+require 'redmine'
+
+Redmine::Plugin.register :cosmosys_adr do
+  name 'cosmoSys ADR'
+  author 'Nesia Tech'
+  description 'Architecture Decision Records for cosmoSys.'
+  version '0.1.0'
+  url 'https://github.com/NesiaTech/cosmosys_adr'
+  author_url 'https://nesia.tech'
+
+  requires_redmine_plugin :cosmosys, version_or_higher: '0.1.7'
+
+  # Status ids are written by the migration, so renaming or translating a
+  # status in the administration does not break the plugin.
+  settings default: { 'status_ids' => {} }
+
+  project_module :adrs do
+    # The ADR tab only lists ADRs. Who can see, create or edit them is decided
+    # by Redmine's own issue permissions on the csAdr tracker.
+    permission :view_adrs, { 'cosmosys_adr/adrs' => [:index] }, public: true, read: true
+  end
+
+  menu :project_menu, :cosmosys_adrs, { controller: 'cosmosys_adr/adrs', action: 'index' },
+    caption: :label_cosmosys_adr_tab,
+    param: :project_id,
+    after: :cosmosys,
+    if: proc { |project| CosmosysAdr.adrs_viewable?(project, User.current) }
+end
+
+require_dependency 'issue'
+require_dependency 'journal'
+require_dependency 'project'
+require_dependency 'enabled_module'
+require_dependency 'projects_helper'
+require_dependency 'issues_helper'
+require_dependency 'application_helper'
+require_dependency File.expand_path('lib/cosmosys_adr', __dir__)
+require_dependency File.expand_path('app/models/cosmosys_adr/project_setting', __dir__)
+require_dependency File.expand_path('app/models/cosmosys_adr/mention', __dir__)
+require_dependency File.expand_path('lib/cosmosys_adr/profile_registration', __dir__)
+require_dependency File.expand_path('lib/cosmosys_adr/templates', __dir__)
+require_dependency File.expand_path('lib/cosmosys_adr/reference', __dir__)
+require_dependency File.expand_path('lib/cosmosys_adr/reference_renderer', __dir__)
+require_dependency File.expand_path('lib/cosmosys_adr/mention_index', __dir__)
+require_dependency File.expand_path('lib/cosmosys_adr/supersession', __dir__)
+require_dependency File.expand_path('lib/cosmosys_adr/links', __dir__)
+require_dependency File.expand_path('lib/cosmosys_adr/module_sync', __dir__)
+require_dependency File.expand_path('lib/cosmosys_adr/issue_patch', __dir__)
+require_dependency File.expand_path('lib/cosmosys_adr/issue_workflow_patch', __dir__)
+require_dependency File.expand_path('lib/cosmosys_adr/journal_patch', __dir__)
+require_dependency File.expand_path('lib/cosmosys_adr/project_patch', __dir__)
+require_dependency File.expand_path('lib/cosmosys_adr/enabled_module_patch', __dir__)
+require_dependency File.expand_path('lib/cosmosys_adr/projects_helper_patch', __dir__)
+require_dependency File.expand_path('lib/cosmosys_adr/issues_helper_patch', __dir__)
+require_dependency File.expand_path('lib/cosmosys_adr/ods_fields', __dir__)
+require_dependency File.expand_path('lib/cosmosys_adr/hooks', __dir__)
+require_dependency File.expand_path('app/helpers/cosmosys_adr/adrs_helper', __dir__)
+
+Cosmosys::PresentationTextRegistry.register(:cosmosys_adr) do |text, project:, user:, formatter: nil|
+  CosmosysAdr::ReferenceRenderer.new(project: project, user: user).render(text)
+end
+Cosmosys::ProjectCopyReferenceRegistry.register(:adr_supersedes_id)
+
+patch_cosmosys_adr = proc do
+  Issue.include CosmosysAdr::IssuePatch unless Issue < CosmosysAdr::IssuePatch
+  Issue.prepend CosmosysAdr::IssueWorkflowPatch unless Issue < CosmosysAdr::IssueWorkflowPatch
+  Journal.include CosmosysAdr::JournalPatch unless Journal < CosmosysAdr::JournalPatch
+  Project.include CosmosysAdr::ProjectPatch unless Project < CosmosysAdr::ProjectPatch
+  EnabledModule.include CosmosysAdr::EnabledModulePatch unless EnabledModule < CosmosysAdr::EnabledModulePatch
+  ProjectsHelper.prepend CosmosysAdr::ProjectsHelperPatch unless ProjectsHelper < CosmosysAdr::ProjectsHelperPatch
+  IssuesHelper.prepend CosmosysAdr::IssuesHelperPatch unless IssuesHelper < CosmosysAdr::IssuesHelperPatch
+  ApplicationHelper.include CosmosysAdr::AdrsHelper unless ApplicationHelper < CosmosysAdr::AdrsHelper
+end
+
+patch_cosmosys_adr.call
+Rails.application.config.to_prepare(&patch_cosmosys_adr)

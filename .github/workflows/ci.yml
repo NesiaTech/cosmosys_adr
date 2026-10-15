@@ -1,0 +1,110 @@
+# Checks on every pull request and on every push to main.
+#
+# The tests run in the image of a cosmoSys deployment, built from
+# cosmoSys_deploy at DEPLOY_REVISION, so they see the Redmine, cosmoSys,
+# cosmoSys Requirements and optional plugins a real instance runs, at the
+# revisions the deployment pins. The scripts are in .github/ci and run the
+# same way on any Docker host. Actions are pinned by commit, and Dependabot
+# moves the pins.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      deploy-ref:
+        description: Branch, tag or commit of cosmoSys_deploy to test against instead of DEPLOY_REVISION
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # The cosmoSys_deploy commit whose pins the tests run on. Move it, in a
+  # commit of its own, when the deployment moves its pins.
+  DEPLOY_REVISION: c12e21a55d3351dafa6f529a912c157c05a46e5f
+
+jobs:
+  sources:
+    name: sources
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: cosmosys_adr
+          persist-credentials: false
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: cosmoBots/cosmoSys_deploy
+          ref: ${{ inputs.deploy-ref || env.DEPLOY_REVISION }}
+          path: deploy
+          persist-credentials: false
+          sparse-checkout: .env.example
+          sparse-checkout-cone-mode: false
+
+      - name: Read the deployment pins
+        run: cosmosys_adr/.github/ci/deploy-pins.sh deploy base none >>"$GITHUB_ENV"
+
+      - name: Ruby syntax and locale keys
+        run: docker run --rm -v "$PWD/cosmosys_adr:/plugin:ro" "$REDMINE_IMAGE" ruby /plugin/.github/ci/check-sources.rb /plugin
+
+  tests:
+    name: tests (${{ matrix.label }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # cosmoSys alone, the only plugin cosmosys_adr requires.
+          - label: cosmoSys
+            variant: base
+            plugin-sets: none
+          # cosmoSys Requirements with every optional plugin set of the
+          # deployment active, which an instance may do.
+          - label: cosmoSys Requirements, every optional plugin
+            variant: requirements
+            plugin-sets: all
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: cosmosys_adr
+          persist-credentials: false
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: cosmoBots/cosmoSys_deploy
+          ref: ${{ inputs.deploy-ref || env.DEPLOY_REVISION }}
+          path: deploy
+          persist-credentials: false
+
+      - name: Read the deployment pins
+        run: cosmosys_adr/.github/ci/deploy-pins.sh deploy ${{ matrix.variant }} ${{ matrix.plugin-sets }} >>"$GITHUB_ENV"
+
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      # The cache of the test image holds every layer, the deployment's too,
+      # so a run only rebuilds what changed since the last one: nothing,
+      # unless the pins or the test image moved. Pull requests from forks
+      # only read it (the second line repeats cache-from for them), so they
+      # cannot fill it and push the cache of main out.
+      - name: Build the test image
+        uses: docker/bake-action@018cb6412ab401ebaa809aa5f85966b74628600f # v7.4.0
+        with:
+          source: .
+          files: cosmosys_adr/.github/ci/docker-bake.hcl
+          targets: test
+          set: |
+            test.cache-from=type=gha,scope=${{ matrix.variant }}-${{ matrix.plugin-sets }}
+            ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('test.cache-to=type=gha,mode=max,scope={0}-{1}', matrix.variant, matrix.plugin-sets) || format('test.cache-from=type=gha,scope={0}-{1}', matrix.variant, matrix.plugin-sets) }}
+
+      - name: Migrations and tests
+        run: cosmosys_adr/.github/ci/test.sh cosmosys-adr-ci:${{ matrix.variant }}

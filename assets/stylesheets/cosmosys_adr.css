@@ -1,0 +1,94 @@
+/* cosmosys_adr: ADR references, status pills, the ADR tab and the panels of
+   the issue page. Colours follow Redmine's default theme. */
+
+.cosmosys-adr-pill {
+  border-radius: 9px;
+  display: inline-block;
+  font-size: 0.85em;
+  font-weight: 600;
+  line-height: 1.5;
+  padding: 0 0.6em;
+  white-space: nowrap;
+}
+
+.cosmosys-adr-pill-proposed { background: #d0ebff; color: #1864ab; }
+.cosmosys-adr-pill-accepted { background: #d3f9d8; color: #2b8a3e; }
+.cosmosys-adr-pill-rejected { background: #ffe3e3; color: #c92a2a; }
+.cosmosys-adr-pill-deprecated { background: #e9ecef; color: #495057; }
+.cosmosys-adr-pill-superseded { background: #e5dbff; color: #5f3dc4; }
+.cosmosys-adr-pill-format,
+.cosmosys-adr-pill-unknown { background: #e9ecef; color: #495057; }
+
+a.cosmosys-adr-ref { font-weight: 600; }
+a.cosmosys-adr-ref-retired { text-decoration: line-through; text-decoration-color: #868e96; }
+.cosmosys-adr-ref-project { color: #868e96; font-size: 0.85em; font-weight: 600; }
+
+.cosmosys-adr-restricted {
+  color: #777;
+  font-style: italic;
+}
+
+.cosmosys-adr-lock {
+  border: 1px solid #ced4da;
+  border-radius: 3px;
+  display: inline-block;
+  font-size: 0.85em;
+  padding: 0 0.5em;
+}
+
+.cosmosys-adr-lock-closed { color: #495057; }
+.cosmosys-adr-lock-open { border-color: #d0ebff; color: #1864ab; }
+
+.cosmosys-adr-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.5rem 0 1rem;
+}
+
+.cosmosys-adr-transition-form,
+.cosmosys-adr-inline-form { display: inline; margin: 0; }
+
+a.cosmosys-adr-button,
+.cosmosys-adr-button {
+  background: #fff;
+  border: 1px solid #ced4da;
+  border-radius: 3px;
+  color: #212529;
+  cursor: pointer;
+  display: inline-block;
+  font-size: 0.9em;
+  padding: 0.2rem 0.7rem;
+  text-decoration: none;
+}
+
+.cosmosys-adr-button-primary { background: #3a78a3; border-color: #3a78a3; color: #fff; }
+.cosmosys-adr-button-danger { border-color: #c92a2a; color: #c92a2a; }
+.cosmosys-adr-hint { color: #868e96; font-size: 0.9em; }
+.cosmosys-adr-banner { margin: 0.5rem 0; }
+
+.cosmosys-adr-filters .cosmosys-adr-filter-row { margin: 0.3rem 0; }
+.cosmosys-adr-filters .cosmosys-adr-filter-label { font-weight: 600; margin-right: 0.5rem; }
+.cosmosys-adr-filters label.inline { margin-right: 0.8rem; }
+
+table.cosmosys-adr-list td.cosmosys-adr-number,
+table.cosmosys-adr-links td.cosmosys-adr-number { font-family: monospace; white-space: nowrap; }
+table.cosmosys-adr-list td.subject,
+table.cosmosys-adr-links td.subject { text-align: left; }
+table.cosmosys-adr-list td.cosmosys-adr-people { text-align: left; }
+tr.cosmosys-adr-content-row td { text-align: left; }
+.cosmosys-adr-content { max-width: 80ch; padding: 0.3rem 0 0.8rem; }
+
+.cosmosys-adr-sidebar-list { list-style: none; margin: 0; padding: 0; }
+.cosmosys-adr-sidebar-list li { padding: 0.15rem 0; }
+.cosmosys-adr-counts li { display: flex; justify-content: space-between; }
+.cosmosys-adr-history-date { color: #868e96; margin-right: 0.3rem; }
+
+.cosmosys-adr-locked-notice {
+  background: #fff9db;
+  border: 1px solid #ffe066;
+  padding: 0.4rem 0.6rem;
+}
+
+.cosmosys-adr-fields .cosmosys-adr-static { display: inline-block; padding-top: 0.2rem; }

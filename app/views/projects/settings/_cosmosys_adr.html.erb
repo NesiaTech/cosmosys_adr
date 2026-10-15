@@ -1,0 +1,26 @@
+<% setting = CosmosysAdr::ProjectSetting.for(@project) %>
+<%= form_tag(project_cosmosys_adr_settings_path(@project), method: :patch, id: 'cosmosys-adr-settings-form') do %>
+  <div class="box tabular">
+    <p>
+      <label for="cosmosys_adr_setting_template"><%= l(:label_cosmosys_adr_template) %></label>
+      <%= select_tag 'cosmosys_adr_setting[template]',
+                     options_for_select(CosmosysAdr::FORMATS.map { |format| [l(:"label_cosmosys_adr_format_#{format}"), format] }, setting.template),
+                     id: 'cosmosys_adr_setting_template' %>
+      <em class="info"><%= l(:text_cosmosys_adr_template_help) %></em>
+    </p>
+    <p>
+      <label><%= l(:label_cosmosys_adr_deciders_setting) %></label>
+      <%= hidden_field_tag 'cosmosys_adr_setting[decider_role_ids][]', '', id: nil %>
+      <% Role.givable.sorted.each do |role| %>
+        <label class="inline"><%= check_box_tag 'cosmosys_adr_setting[decider_role_ids][]', role.id, setting.decider_role_ids.include?(role.id), id: "cosmosys_adr_setting_role_#{role.id}" %> <%= role.name %></label>
+      <% end %>
+      <em class="info"><%= l(:text_cosmosys_adr_deciders_setting_help) %></em>
+    </p>
+    <p>
+      <label><%= l(:label_cosmosys_adr_tree_report) %></label>
+      <%= check_box_tag 'cosmosys_adr_tree_report', '1', false, disabled: true %>
+      <em class="info"><%= l(:text_cosmosys_adr_tree_report_help) %></em>
+    </p>
+  </div>
+  <%= submit_tag l(:button_save) %>
+<% end %>
