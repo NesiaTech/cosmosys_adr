@@ -37,6 +37,30 @@ module CosmosysAdr
     def adr_status(key)
       CosmosysAdr.status(key)
     end
+
+    def create_adr_project(identifier, template: 'nygard', adrs: true, is_public: false, parent: nil)
+      project = Project.new(name: identifier.tr('-', ' ').capitalize, identifier: identifier, is_public: is_public,
+                            cscode: identifier.delete('-_').upcase.first(8))
+      project.parent = parent if parent
+      project.csys_modules_explicit = '1'
+      project.enabled_module_names = adrs ? %w[issue_tracking adrs] : %w[issue_tracking]
+      project.tracker_ids = [@bug_tracker.id]
+      project.save!
+      CosmosysAdr::ModuleSync.call(project)
+      project.reload
+      if adrs
+        setting = CosmosysAdr::ProjectSetting.for!(project)
+        setting.update!(template: template)
+      end
+      add_member(project, @manager, @manager_role)
+      add_member(project, @developer, @developer_role)
+      add_member(project, @reporter, @reporter_role)
+      project
+    end
+
+    def add_member(project, user, role)
+      Member.create!(principal: user, project: project, role_ids: [role.id])
+    end
   end
 end
 

@@ -2,6 +2,7 @@ module CosmosysAdr
   TRACKER_KEY = 'adr'.freeze
   TRACKER_NAME = 'csAdr'.freeze
   ITEM_KIND = 'adr'.freeze
+  MODULE_NAME = 'adrs'.freeze
   FORMATS = %w[nygard madr].freeze
   DEFAULT_FORMAT = 'nygard'.freeze
 
@@ -54,5 +55,9 @@ module CosmosysAdr
     return nil if id.blank?
 
     status_ids.key(id.to_i)
+  end
+
+  def module_enabled?(project)
+    project.present? && project.module_enabled?(MODULE_NAME).present?
   end
 end

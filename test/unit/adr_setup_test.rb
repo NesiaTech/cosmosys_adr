@@ -57,6 +57,32 @@ class CosmosysAdrSetupTest < ActiveSupport::TestCase
                                         :can_have_children, :can_split, :physical_delete_policy)
   end
 
+  def test_enabling_the_module_adds_the_tracker_and_settings
+    project = create_adr_project('adr-setup', adrs: false)
+    assert_not_includes project.trackers, @adr_tracker
+
+    project.enable_module!(CosmosysAdr::MODULE_NAME)
+    CosmosysAdr::ModuleSync.call(project)
+    assert_includes project.reload.trackers, @adr_tracker
+    assert CosmosysAdr::ProjectSetting.exists?(project_id: project.id)
+  end
+
+  def test_saving_the_modules_of_a_project_keeps_the_tracker_in_step
+    project = create_adr_project('adr-setup-2')
+    project.enabled_module_names = %w[issue_tracking]
+    project.save!
+    CosmosysAdr::ModuleSync.call(project)
+
+    assert_not_includes project.reload.trackers, @adr_tracker
+  end
+
+  def test_default_deciders_are_manager_and_developer_by_id
+    setting = CosmosysAdr::ProjectSetting.for(create_adr_project('adr-setup-3'))
+
+    assert_equal [@manager_role.id, @developer_role.id].sort, setting.decider_role_ids.sort
+    assert_equal 'nygard', CosmosysAdr::ProjectSetting.for(create_adr_project('adr-setup-4', adrs: false)).template
+  end
+
   def test_default_deciders_are_found_in_other_languages
     @manager_role.update!(name: 'Jefe de proyecto')
     @developer_role.update!(name: 'Desarrollador')
