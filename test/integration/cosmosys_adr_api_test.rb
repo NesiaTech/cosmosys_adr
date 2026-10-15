@@ -42,6 +42,25 @@ class CosmosysAdrApiTest < Redmine::ApiTest::Base
     assert_equal 'Use Redis 8', fresh(@proposed).subject
   end
 
+  def test_a_member_who_may_only_add_notes_cannot_change_adr_fields
+    project = create_adr_project('adr-api-madr', template: 'madr')
+    adr = create_adr(project, subject: 'Use Kafka', adr_decision_makers: 'architects')
+    target = accepted_adr(project, subject: 'Use RabbitMQ')
+    @reporter_role.remove_permission!(:edit_issues)
+    @reporter_role.remove_permission!(:edit_own_issues)
+    @reporter_role.add_permission!(:add_issue_notes)
+
+    put "/issues/#{adr.id}.json",
+        params: { issue: { notes: 'Looks fine.', adr_decision_makers: 'me', adr_supersedes_id: target.id } },
+        headers: credentials(@reporter.login, @password)
+
+    assert_response :no_content
+    adr = fresh(adr)
+    assert_equal 'architects', adr.adr_decision_makers
+    assert_nil adr.adr_supersedes_id
+    assert_equal 'Looks fine.', adr.journals.order(:id).last.notes
+  end
+
   def test_a_reporter_cannot_accept_through_the_api
     put "/issues/#{@proposed.id}.json", params: { issue: { status_id: adr_status(:accepted).id } },
                                         headers: credentials(@reporter.login, @password)

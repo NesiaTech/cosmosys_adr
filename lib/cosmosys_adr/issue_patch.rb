@@ -30,10 +30,14 @@ module CosmosysAdr
         has_many :cosmosys_adr_mentions, class_name: 'CosmosysAdr::Mention', foreign_key: :issue_id,
                  dependent: :delete_all
 
+        # Like Redmine's own fields: whoever may only add notes cannot change
+        # them.
         safe_attributes 'adr_supersedes_id',
-                        if: ->(issue, _user) { issue.cosmosys_adr? }
+                        if: ->(issue, user) { issue.cosmosys_adr? && issue.cosmosys_adr_fields_editable?(user) }
         safe_attributes(*CosmosysAdr::IssuePatch::MADR_ATTRIBUTES,
-                        if: ->(issue, _user) { issue.cosmosys_adr? && issue.cosmosys_adr_madr? })
+                        if: lambda { |issue, user|
+                          issue.cosmosys_adr? && issue.cosmosys_adr_madr? && issue.cosmosys_adr_fields_editable?(user)
+                        })
 
         before_validation :cosmosys_adr_apply_defaults, on: :create
         validate :cosmosys_adr_validate
@@ -70,6 +74,10 @@ module CosmosysAdr
 
     def cosmosys_adr_madr?
       cosmosys_adr_format == 'madr'
+    end
+
+    def cosmosys_adr_fields_editable?(user)
+      new_record? || attributes_editable?(user)
     end
 
     # Decided ADRs are locked: only notes, relations and the transitions of
