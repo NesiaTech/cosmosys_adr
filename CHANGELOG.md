@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-15
+
 ### Added
 
 - Architecture Decision Records as issues of the `csAdr` tracker, numbered `ADR-0001`, `ADR-0002`… within each project. A number is never reused.
@@ -20,4 +22,5 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - English and Spanish translations.
 - Continuous integration: Ruby syntax and locale keys, the migrations rolled back and forward, and the tests with cosmoSys alone and with cosmoSys Requirements and every optional plugin set of cosmoSys_deploy.
 
-[Unreleased]: https://github.com/NesiaTech/cosmosys_adr/commits/main
+[Unreleased]: https://github.com/NesiaTech/cosmosys_adr/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/NesiaTech/cosmosys_adr/releases/tag/v0.1.0
