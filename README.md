@@ -78,7 +78,7 @@ The test database needs Redmine's default data before the cosmoSys migrations (`
 `.github/workflows/ci.yml` runs on every pull request and on every push to `main`:
 
 - `sources`: every Ruby file compiles without warnings, and every locale has exactly the keys of `en.yml`, with the Ruby of the deployment's Redmine image.
-- `tests`: in the image of a cosmoSys deployment, built from [cosmoSys_deploy](https://github.com/cosmoBots/cosmoSys_deploy) at the commit the workflow pins (`DEPLOY_REVISION`), the test database is migrated as an instance is, this plugin's migrations are rolled back and run again, and the tests run. It runs twice: with cosmoSys alone, and with cosmoSys Requirements and every optional plugin set of the deployment.
+- `tests`: in the image of a cosmoSys deployment, built from [cosmoSys_deploy](https://github.com/cosmoBots/cosmoSys_deploy) at the commit the workflow pins (`DEPLOY_REVISION`), the test database is migrated as an instance is, this plugin's migrations are rolled back and run again, and the tests run. It runs twice: with cosmoSys alone, and with cosmoSys Requirements and every optional plugin set of the deployment. When NesiaTech has published the image of that deployment revision (privately, under the name the deployment gives it), the job starts from it instead of building the deployment; pull requests from forks and revisions without an image build it as before.
 
 The scripts are in `.github/ci` and run on any Docker host with Buildx, from a directory that holds this plugin as `cosmosys_adr` and a cosmoSys_deploy checkout as `deploy`:
 
@@ -86,6 +86,12 @@ The scripts are in `.github/ci` and run on any Docker host with Buildx, from a d
 pins=$(cosmosys_adr/.github/ci/deploy-pins.sh deploy requirements all)
 env $pins docker buildx bake -f cosmosys_adr/.github/ci/docker-bake.hcl test
 env $pins cosmosys_adr/.github/ci/test.sh cosmosys-adr-ci:requirements
+```
+
+These commands build the deployment. On a `linux/amd64` host that can read the published image, this line before the build makes it start from that image instead:
+
+```sh
+pins="$pins $(env $pins cosmosys_adr/.github/ci/deploy-image.sh deploy ghcr.io/nesiatech/cosmosys_deploy_images)"
 ```
 
 When the deployment moves its pins, move `DEPLOY_REVISION` in a commit of its own. To try another revision of the deployment first, run the workflow by hand with `deploy-ref`.
